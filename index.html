@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT-2 Text Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        textarea, input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GPT-2 Text Generator</h1>
+        
+        <div>
+            <label for="prompt">Enter your prompt:</label>
+            <textarea id="prompt" rows="4" placeholder="Type something to generate text..."></textarea>
+        </div>
+        
+        <div>
+            <label for="max_length">Max length:</label>
+            <input type="number" id="max_length" value="50" min="10" max="200">
+        </div>
+        
+        <button id="generate-btn">Generate Text</button>
+        
+        <div id="loading">
+            <p>Generating text... Please wait.</p>
+        </div>
+        
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('generate-btn').addEventListener('click', async function() {
+            const prompt = document.getElementById('prompt').value;
+            const maxLength = document.getElementById('max_length').value;
+            
+            if (!prompt) {
+                alert('Please enter a prompt');
+                return;
+            }
+            
+            const loading = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+            
+            loading.style.display = 'block';
+            resultDiv.innerHTML = '';
+            
+            try {
+                // Make sure this matches your API endpoint
+                const response = await fetch('http://localhost:5000/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        max_length: parseInt(maxLength)
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.generated_text) {
+                    resultDiv.innerHTML = `<h3>Generated Text:</h3><p>${data.generated_text}</p>`;
+                } else {
+                    resultDiv.innerHTML = '<p>Error generating text. Please try again.</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
