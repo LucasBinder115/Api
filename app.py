@@ -6,62 +6,53 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import os
 
-# Configuração segura para carregar o modelo
-def load_model():
+def load_model_safely():
     model_name = "gpt2"
     try:
-        # Tentar carregar normalmente primeiro
+        # Tentativa principal de carregamento
         tokenizer = GPT2Tokenizer.from_pretrained(model_name)
         model = GPT2LMHeadModel.from_pretrained(model_name)
         return tokenizer, model
     except Exception as e:
-        print(f"Erro ao carregar o modelo: {e}")
-        # Tentar carregar com configuração manual se falhar
+        print(f"Erro no carregamento padrão: {e}")
+        
+        # Tentativa alternativa com modelo menor
         try:
-            from transformers import GPT2Config
-            config = GPT2Config.from_pretrained(model_name)
-            model = GPT2LMHeadModel(config)
+            model_name = "distilgpt2"  # Modelo mais leve e compatível
             tokenizer = GPT2Tokenizer.from_pretrained(model_name)
-            
-            # Carregar pesos manualmente (pode ser mais lento)
-            from transformers.utils import cached_file
-            model_path = cached_file(model_name, "pytorch_model.bin")
-            state_dict = torch.load(model_path, map_location='cpu')
-            model.load_state_dict(state_dict)
-            
+            model = GPT2LMHeadModel.from_pretrained(model_name)
+            messagebox.showwarning("Aviso", "Carregado modelo distilgpt2 (mais leve) no lugar de gpt2")
             return tokenizer, model
         except Exception as e:
-            messagebox.showerror("Erro Crítico", f"Não foi possível carregar o modelo: {e}")
+            messagebox.showerror("Erro Crítico", f"Não foi possível carregar nenhum modelo: {e}")
             raise
 
-# Carregar o modelo e tokenizer
-tokenizer, model = load_model()
+# Carregar modelo e tokenizer
+tokenizer, model = load_model_safely()
 
-# Função para gerar perguntas com base no prompt do usuário
-def generate_questions(prompt, num_questions=10):
+# Função para gerar perguntas
+def generate_questions(prompt, num_questions=5):  # Reduzi para 5 por padrão
     questions = []
     for _ in range(num_questions):
         try:
             inputs = tokenizer.encode(prompt, return_tensors="pt")
             outputs = model.generate(
                 inputs,
-                max_length=50,
+                max_length=100,
                 num_return_sequences=1,
-                no_repeat_ngram_size=2,
                 do_sample=True,
                 top_k=50,
                 top_p=0.95,
                 temperature=0.7,
-                pad_token_id=tokenizer.eos_token_id  # Adicionado para evitar warnings
+                pad_token_id=tokenizer.eos_token_id
             )
             question = tokenizer.decode(outputs[0], skip_special_tokens=True)
             questions.append(question)
         except Exception as e:
-            print(f"Erro ao gerar pergunta: {e}")
-            questions.append(f"[Erro ao gerar pergunta: {str(e)}]")
+            questions.append(f"[Erro na geração: {str(e)}]")
     return questions
 
-# Função para criar o PDF
+# Função para criar PDF (mantida igual)
 def create_pdf(questions, filename="perguntas_geradas.pdf"):
     try:
         c = canvas.Canvas(filename, pagesize=letter)
@@ -71,7 +62,6 @@ def create_pdf(questions, filename="perguntas_geradas.pdf"):
         c.drawString(30, y, "Perguntas Geradas:")
         y -= 20
         for i, q in enumerate(questions, 1):
-            # Quebra de linha se o texto for muito longo
             if len(q) > 80:
                 parts = [q[i:i+80] for i in range(0, len(q), 80)]
                 for part in parts:
@@ -89,88 +79,57 @@ def create_pdf(questions, filename="perguntas_geradas.pdf"):
         messagebox.showerror("Erro no PDF", f"Erro ao criar PDF: {e}")
         return None
 
-# Função chamada ao clicar no botão "Gerar"
+# Interface gráfica (mantida similar)
+window = tk.Tk()
+window.title("Gerador de Perguntas com GPT-2")
+window.geometry("700x500")
+
+# Componentes da interface (como antes)
+label_prompt = tk.Label(window, text="Digite o prompt para gerar perguntas:")
+label_prompt.pack(pady=5)
+
+entry_prompt = tk.Entry(window, width=70)
+entry_prompt.pack(pady=5)
+
+button_generate = tk.Button(window, text="Gerar Perguntas", command=lambda: on_generate())
+button_generate.pack(pady=5)
+
+text_output = tk.Text(window, height=15, width=85)
+text_output.pack(pady=5)
+
+button_download = tk.Button(window, text="Baixar PDF", state=tk.DISABLED, command=lambda: on_download())
+button_download.pack(pady=5)
+
 def on_generate():
     prompt = entry_prompt.get().strip()
     if not prompt:
         messagebox.showwarning("Erro", "Por favor, insira um prompt!")
         return
     
+    button_generate.config(state=tk.DISABLED)
+    button_generate.config(text="Gerando...")
+    window.update()
+    
     try:
-        # Desabilitar botão durante a geração
-        button_generate.config(state=tk.DISABLED)
-        button_generate.config(text="Gerando...")
-        window.update()
-        
-        # Gerar perguntas
         questions = generate_questions(prompt)
-        
-        # Limpar o texto anterior e exibir as perguntas
         text_output.delete(1.0, tk.END)
         for i, q in enumerate(questions, 1):
             text_output.insert(tk.END, f"{i}. {q}\n")
         
-        # Habilitar o botão de download e armazenar as perguntas
         button_download.config(state=tk.NORMAL)
         window.questions = questions
     except Exception as e:
-        messagebox.showerror("Erro", f"Ocorreu um erro: {e}")
+        messagebox.showerror("Erro", f"Falha na geração: {e}")
     finally:
         button_generate.config(state=tk.NORMAL)
         button_generate.config(text="Gerar Perguntas")
 
-# Função chamada ao clicar no botão "Baixar PDF"
 def on_download():
     if hasattr(window, 'questions'):
         filename = create_pdf(window.questions)
         if filename:
             messagebox.showinfo("Sucesso", f"PDF salvo como:\n{filename}")
     else:
-        messagebox.showerror("Erro", "Gere as perguntas primeiro!")
+        messagebox.showerror("Erro", "Gere perguntas primeiro!")
 
-# Configurar a interface gráfica
-window = tk.Tk()
-window.title("Gerador de Perguntas com GPT-2")
-window.geometry("700x500")
-
-# Estilo melhorado
-font_style = ("Arial", 10)
-padding = 10
-
-# Frame principal para organização
-main_frame = tk.Frame(window, padx=20, pady=20)
-main_frame.pack(fill=tk.BOTH, expand=True)
-
-# Campo para o prompt
-label_prompt = tk.Label(main_frame, text="Digite o prompt para gerar perguntas:", font=font_style)
-label_prompt.pack(pady=5)
-
-entry_prompt = tk.Entry(main_frame, width=70, font=font_style)
-entry_prompt.pack(pady=5)
-
-# Frame para botões
-button_frame = tk.Frame(main_frame)
-button_frame.pack(pady=padding)
-
-button_generate = tk.Button(button_frame, text="Gerar Perguntas", command=on_generate, 
-                          font=font_style, bg="#4CAF50", fg="white")
-button_generate.pack(side=tk.LEFT, padx=5)
-
-button_download = tk.Button(button_frame, text="Baixar PDF", command=on_download, 
-                          state=tk.DISABLED, font=font_style, bg="#2196F3", fg="white")
-button_download.pack(side=tk.LEFT, padx=5)
-
-# Área de texto com scrollbar
-text_frame = tk.Frame(main_frame)
-text_frame.pack(fill=tk.BOTH, expand=True)
-
-scrollbar = tk.Scrollbar(text_frame)
-scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-text_output = tk.Text(text_frame, height=15, width=85, font=font_style, yscrollcommand=scrollbar.set)
-text_output.pack(fill=tk.BOTH, expand=True)
-
-scrollbar.config(command=text_output.yview)
-
-# Iniciar a interface
 window.mainloop()

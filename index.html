@@ -1,125 +1,135 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPT-2 Text Generator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        .container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        textarea, input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        #loading {
-            display: none;
-            text-align: center;
-            margin: 10px 0;
-        }
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-left: 4px solid #4CAF50;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>GPT-2 Text Generator</h1>
-        
-        <div>
-            <label for="prompt">Enter your prompt:</label>
-            <textarea id="prompt" rows="4" placeholder="Type something to generate text..."></textarea>
-        </div>
-        
-        <div>
-            <label for="max_length">Max length:</label>
-            <input type="number" id="max_length" value="50" min="10" max="200">
-        </div>
-        
-        <button id="generate-btn">Generate Text</button>
-        
-        <div id="loading">
-            <p>Generating text... Please wait.</p>
-        </div>
-        
-        <div class="result" id="result"></div>
-    </div>
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
+import torch
+import tkinter as tk
+from tkinter import messagebox
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import os
 
-    <script>
-        document.getElementById('generate-btn').addEventListener('click', async function() {
-            const prompt = document.getElementById('prompt').value;
-            const maxLength = document.getElementById('max_length').value;
-            
-            if (!prompt) {
-                alert('Please enter a prompt');
-                return;
-            }
-            
-            const loading = document.getElementById('loading');
-            const resultDiv = document.getElementById('result');
-            
-            loading.style.display = 'block';
-            resultDiv.innerHTML = '';
-            
-            try {
-                // Make sure this matches your API endpoint
-                const response = await fetch('http://localhost:5000/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        prompt: prompt,
-                        max_length: parseInt(maxLength)
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.generated_text) {
-                    resultDiv.innerHTML = `<h3>Generated Text:</h3><p>${data.generated_text}</p>`;
-                } else {
-                    resultDiv.innerHTML = '<p>Error generating text. Please try again.</p>';
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                resultDiv.innerHTML = `<p>Error: ${error.message}</p>`;
-            } finally {
-                loading.style.display = 'none';
-            }
-        });
-    </script>
-</body>
-</html>
+def load_model_safely():
+    model_name = "gpt2"
+    try:
+        # Tentativa principal de carregamento
+        tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+        model = GPT2LMHeadModel.from_pretrained(model_name)
+        return tokenizer, model
+    except Exception as e:
+        print(f"Erro no carregamento padrão: {e}")
+        
+        # Tentativa alternativa com modelo menor
+        try:
+            model_name = "distilgpt2"  # Modelo mais leve e compatível
+            tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+            model = GPT2LMHeadModel.from_pretrained(model_name)
+            messagebox.showwarning("Aviso", "Carregado modelo distilgpt2 (mais leve) no lugar de gpt2")
+            return tokenizer, model
+        except Exception as e:
+            messagebox.showerror("Erro Crítico", f"Não foi possível carregar nenhum modelo: {e}")
+            raise
+
+# Carregar modelo e tokenizer
+tokenizer, model = load_model_safely()
+
+# Função para gerar perguntas
+def generate_questions(prompt, num_questions=5):  # Reduzi para 5 por padrão
+    questions = []
+    for _ in range(num_questions):
+        try:
+            inputs = tokenizer.encode(prompt, return_tensors="pt")
+            outputs = model.generate(
+                inputs,
+                max_length=100,
+                num_return_sequences=1,
+                do_sample=True,
+                top_k=50,
+                top_p=0.95,
+                temperature=0.7,
+                pad_token_id=tokenizer.eos_token_id
+            )
+            question = tokenizer.decode(outputs[0], skip_special_tokens=True)
+            questions.append(question)
+        except Exception as e:
+            questions.append(f"[Erro na geração: {str(e)}]")
+    return questions
+
+# Função para criar PDF (mantida igual)
+def create_pdf(questions, filename="perguntas_geradas.pdf"):
+    try:
+        c = canvas.Canvas(filename, pagesize=letter)
+        width, height = letter
+        c.setFont("Helvetica", 12)
+        y = height - 40
+        c.drawString(30, y, "Perguntas Geradas:")
+        y -= 20
+        for i, q in enumerate(questions, 1):
+            if len(q) > 80:
+                parts = [q[i:i+80] for i in range(0, len(q), 80)]
+                for part in parts:
+                    c.drawString(30, y, f"{i}. {part}" if part == parts[0] else f"    {part}")
+                    y -= 15
+            else:
+                c.drawString(30, y, f"{i}. {q}")
+                y -= 20
+            if y < 40:
+                c.showPage()
+                y = height - 40
+        c.save()
+        return os.path.abspath(filename)
+    except Exception as e:
+        messagebox.showerror("Erro no PDF", f"Erro ao criar PDF: {e}")
+        return None
+
+# Interface gráfica (mantida similar)
+window = tk.Tk()
+window.title("Gerador de Perguntas com GPT-2")
+window.geometry("700x500")
+
+# Componentes da interface (como antes)
+label_prompt = tk.Label(window, text="Digite o prompt para gerar perguntas:")
+label_prompt.pack(pady=5)
+
+entry_prompt = tk.Entry(window, width=70)
+entry_prompt.pack(pady=5)
+
+button_generate = tk.Button(window, text="Gerar Perguntas", command=lambda: on_generate())
+button_generate.pack(pady=5)
+
+text_output = tk.Text(window, height=15, width=85)
+text_output.pack(pady=5)
+
+button_download = tk.Button(window, text="Baixar PDF", state=tk.DISABLED, command=lambda: on_download())
+button_download.pack(pady=5)
+
+def on_generate():
+    prompt = entry_prompt.get().strip()
+    if not prompt:
+        messagebox.showwarning("Erro", "Por favor, insira um prompt!")
+        return
+    
+    button_generate.config(state=tk.DISABLED)
+    button_generate.config(text="Gerando...")
+    window.update()
+    
+    try:
+        questions = generate_questions(prompt)
+        text_output.delete(1.0, tk.END)
+        for i, q in enumerate(questions, 1):
+            text_output.insert(tk.END, f"{i}. {q}\n")
+        
+        button_download.config(state=tk.NORMAL)
+        window.questions = questions
+    except Exception as e:
+        messagebox.showerror("Erro", f"Falha na geração: {e}")
+    finally:
+        button_generate.config(state=tk.NORMAL)
+        button_generate.config(text="Gerar Perguntas")
+
+def on_download():
+    if hasattr(window, 'questions'):
+        filename = create_pdf(window.questions)
+        if filename:
+            messagebox.showinfo("Sucesso", f"PDF salvo como:\n{filename}")
+    else:
+        messagebox.showerror("Erro", "Gere perguntas primeiro!")
+
+window.mainloop()
