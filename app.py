@@ -23,7 +23,7 @@ def generate_questions(prompt, num_questions=10):
             "...",
             generation_config={
                 "temperature": 0.7,
-                "max_output_tokens": 1000,
+                "max_output_tokens": 100,
             }
         )
         
