@@ -6,7 +6,7 @@ from reportlab.pdfgen import canvas
 import os
 
 # Configuração Correta da API
-GENAI_API_KEY = "AIzaSyDe-AA1In-JFixZxE40-IgEz1G-2j1cVyA"  # 👈 Substitua pela sua chave
+GENAI_API_KEY = "Tem uma Key Secreta aqui hehehe"  # 👈 Substitua pela sua chave
 genai.configure(api_key=GENAI_API_KEY)
 
 # Use o modelo mais recente
