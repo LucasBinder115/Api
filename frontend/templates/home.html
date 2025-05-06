@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MontPython - Gerador de Questionários</title>
+    <link rel="stylesheet" href="../static/css/home.css">
+</head>
+<body>
+    <div class="auth-links">
+        <a href="login.html">Login</a>
+        <a href="register.html">Registro</a>
+    </div>
+
+    <header>
+        <h1>Gere seu questionário para a prova de hoje</h1>
+        <span class="mode-tag">Modo "Sem Tempo Irmão"</span>
+    </header>
+
+    <div class="generator-box">
+        <h2>Gerador Rápido de Questionários</h2>
+        <input type="text" id="topic" placeholder="Digite o tema do questionário (ex: Python, Matemática)">
+        <button id="generate-btn">Gerar Perguntas Agora</button>
+        
+        <div id="questions-container">
+            <h3>Perguntas Geradas:</h3>
+            <textarea id="questions-output" readonly></textarea>
+            <button id="download-pdf">Baixar PDF</button>
+        </div>
+    </div>
+
+    <div class="pdf-list">
+        <h2>Seus Questionários Recentes</h2>
+        <ul id="recent-pdfs">
+        
+        </ul>
+    </div>
+
+    <script src="../static/js/home.js"></script>
+</body>
+</html>

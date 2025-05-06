@@ -1,0 +1,9 @@
+setup.py
+backend/__init__.py
+backend/app.py
+backend/database.py
+gerador_de_questionario.egg-info/PKG-INFO
+gerador_de_questionario.egg-info/SOURCES.txt
+gerador_de_questionario.egg-info/dependency_links.txt
+gerador_de_questionario.egg-info/requires.txt
+gerador_de_questionario.egg-info/top_level.txt
