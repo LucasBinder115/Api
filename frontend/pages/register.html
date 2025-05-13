@@ -8,51 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #6B7280, #1F2937);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-        }
-        .register-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 1rem;
-            padding: 2.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 400px;
-            animation: fadeIn 0.8s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .form-input {
-            transition: all 0.3s ease;
-        }
-        .form-input:focus {
-            border-color: #3B82F6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-        }
-        .error-message {
-            color: #EF4444;
-            font-size: 0.875rem;
-            display: none;
-            margin-top: 0.25rem;
-        }
-        .btn-primary {
-            background: linear-gradient(to right, #3B82F6, #1D4ED8);
-            transition: transform 0.2s ease;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-        }
-    </style>
+    <link rel="stylesheet" href="../css/register.css">
 </head>
 <body>
     <div class="register-container">
@@ -85,8 +41,6 @@
         </p>
     </div>
 
-    <script>
-        
-    </script>
+    <script src="../js/register.js"></script>
 </body>
 </html>

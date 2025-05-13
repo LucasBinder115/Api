@@ -3,147 +3,463 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Questionários</title>
-    <!-- Tailwind CSS CDN -->
+    <title>PDF Master - Gerador Avançado</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Heroicons CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/heroicons@2.0.13/dist/heroicons.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- PDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #6B7280, #1F2937);
-            min-height: 100vh;
-            margin: 0;
-            padding-top: 5rem;
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 10;
+        .pdf-preview {
+            min-height: 500px;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
-        .nav-link {
-            transition: color 0.3s ease, transform 0.2s ease;
-        }
-        .nav-link:hover {
-            color: #3B82F6;
-            transform: translateY(-2px);
-        }
-        .container {
-            max-width: 800px;
-            margin: 2rem auto;
-            animation: fadeIn 0.8s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 1rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            padding: 2rem;
-        }
-        .btn-primary {
-            background: linear-gradient(to right, #3B82F6, #1D4ED8);
-            transition: transform 0.2s ease;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-        }
-        .btn-secondary {
-            transition: transform 0.2s ease;
-        }
-        .btn-secondary:hover {
-            transform: translateY(-2px);
-        }
-        .tab-button {
+        .option-card {
             transition: all 0.3s ease;
         }
-        .tab-button.active {
-            border-bottom: 3px solid #3B82F6;
-            color: #3B82F6;
-            font-weight: 600;
+        .option-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #667eea;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #667eea;
         }
     </style>
 </head>
-<body>
-    <!-- Barra de Navegação -->
-    <nav class="navbar py-4">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-            <a href="home.html" class="text-xl font-bold text-gray-800">Gerador de Questionários</a>
-            <div class="flex space-x-4">
-                <a href="login.html" class="nav-link text-gray-600 hover:text-blue-600">Login</a>
-                <a href="register.html" class="nav-link text-gray-600 hover:text-blue-600">Registrar</a>
-            </div>
-        </div>
-    </nav>
+<body class="gradient-bg min-h-screen text-gray-800">
+    <div class="container mx-auto px-4 py-12">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-white mb-4">PDF Master</h1>
+            <p class="text-xl text-white opacity-90">Gerador de PDFs avançado com múltiplas opções</p>
+        </header>
 
-    <!-- Conteúdo Principal -->
-    <div class="container">
-        <div class="card">
-            <!-- Abas -->
-            <div class="flex border-b border-gray-200 mb-6">
-                <button class="tab-button px-4 py-2 text-gray-600 font-medium active" id="generate-tab" data-target="#generate">Gerar</button>
-                <button class="tab-button px-4 py-2 text-gray-600 font-medium" id="history-tab" data-target="#history">Histórico</button>
-            </div>
-
-            <!-- Aba de Geração -->
-            <div id="generate" class="tab-content">
-                <div class="mb-4">
-                    <label for="topicInput" class="block text-sm font-medium text-gray-700">Tema do Questionário:</label>
-                    <input type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="topicInput" placeholder="Ex: História do Brasil">
+        <!-- Main Content -->
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+            <div class="grid md:grid-cols-3">
+                <!-- Sidebar -->
+                <div class="bg-gray-50 p-6 md:p-8 border-r border-gray-200">
+                    <h2 class="text-2xl font-bold mb-6 text-gray-800">Opções</h2>
+                    
+                    <!-- Template Selection -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold mb-3 flex items-center">
+                            <i class="fas fa-palette mr-2 text-indigo-600"></i>
+                            Modelos
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button class="template-btn option-card bg-white p-3 rounded-lg border border-gray-200 flex flex-col items-center" data-template="simple">
+                                <i class="fas fa-file-alt text-3xl mb-2 text-indigo-600"></i>
+                                <span>Simples</span>
+                            </button>
+                            <button class="template-btn option-card bg-white p-3 rounded-lg border border-gray-200 flex flex-col items-center" data-template="professional">
+                                <i class="fas fa-briefcase text-3xl mb-2 text-indigo-600"></i>
+                                <span>Profissional</span>
+                            </button>
+                            <button class="template-btn option-card bg-white p-3 rounded-lg border border-gray-200 flex flex-col items-center" data-template="academic">
+                                <i class="fas fa-graduation-cap text-3xl mb-2 text-indigo-600"></i>
+                                <span>Acadêmico</span>
+                            </button>
+                            <button class="template-btn option-card bg-white p-3 rounded-lg border border-gray-200 flex flex-col items-center" data-template="creative">
+                                <i class="fas fa-paint-brush text-3xl mb-2 text-indigo-600"></i>
+                                <span>Criativo</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Layout Options -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold mb-3 flex items-center">
+                            <i class="fas fa-layer-group mr-2 text-indigo-600"></i>
+                            Layout
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span>Margens</span>
+                                <select class="border rounded px-3 py-1 w-24" id="margin-select">
+                                    <option value="normal">Normal</option>
+                                    <option value="narrow">Estreitas</option>
+                                    <option value="wide">Largas</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Orientação</span>
+                                <div class="flex items-center space-x-2">
+                                    <button class="orientation-btn px-3 py-1 rounded border" data-orientation="portrait">Retrato</button>
+                                    <button class="orientation-btn px-3 py-1 rounded border" data-orientation="landscape">Paisagem</button>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Tamanho</span>
+                                <select class="border rounded px-3 py-1 w-24" id="size-select">
+                                    <option value="a4">A4</option>
+                                    <option value="letter">Carta</option>
+                                    <option value="legal">Legal</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Content Options -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold mb-3 flex items-center">
+                            <i class="fas fa-edit mr-2 text-indigo-600"></i>
+                            Conteúdo
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span>Cabeçalho</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="toggle-checkbox sr-only" id="header-toggle" checked>
+                                    <div class="toggle-label w-11 h-6 bg-gray-200 rounded-full"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Rodapé</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="toggle-checkbox sr-only" id="footer-toggle" checked>
+                                    <div class="toggle-label w-11 h-6 bg-gray-200 rounded-full"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Números de página</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="toggle-checkbox sr-only" id="pagenum-toggle">
+                                    <div class="toggle-label w-11 h-6 bg-gray-200 rounded-full"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Export Options -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 flex items-center">
+                            <i class="fas fa-file-export mr-2 text-indigo-600"></i>
+                            Exportar
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button id="export-pdf" class="bg-indigo-600 text-white py-2 px-4 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-file-pdf mr-2"></i> PDF
+                            </button>
+                            <button id="export-html" class="bg-gray-200 py-2 px-4 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-code mr-2"></i> HTML
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <button id="generateBtn" class="btn-primary flex items-center px-4 py-2 text-white font-semibold rounded-md">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    Gerar Perguntas
-                </button>
                 
-                <div id="questionsContainer" class="mt-6 hidden">
-                    <h3 class="text-lg font-semibold text-gray-800">Perguntas Geradas:</h3>
-                    <div id="questionsList" class="space-y-4"></div>
-                    <button id="savePdfBtn" class="btn-primary mt-4 px-4 py-2 text-white font-semibold rounded-md">Salvar como PDF</button>
-                </div>
-            </div>
-
-            <!-- Aba de Histórico -->
-            <div id="history" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Questionários Anteriores</h3>
-                    <button id="refreshHistoryBtn" class="btn-secondary px-3 py-1 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100">Atualizar</button>
-                </div>
-                <div id="historyList" class="space-y-4"></div>
-                
-                <div id="pdfDetail" class="mt-6 hidden">
-                    <h4 class="text-md font-semibold text-gray-800">Detalhes do Questionário</h4>
-                    <div id="pdfInfo" class="bg-gray-50 p-4 rounded-md mb-4"></div>
-                    <div class="flex space-x-2">
-                        <button id="downloadPdfBtn" class="btn-primary px-4 py-2 text-white font-semibold rounded-md">Baixar PDF</button>
-                        <button id="deletePdfBtn" class="btn-secondary px-4 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-50">Excluir</button>
+                <!-- Editor Area -->
+                <div class="md:col-span-2 p-6 md:p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold">Editor de PDF</h2>
+                        <div class="flex space-x-2">
+                            <button id="clear-btn" class="px-4 py-2 border rounded-lg text-gray-600">
+                                <i class="fas fa-trash-alt mr-2"></i>Limpar
+                            </button>
+                            <button id="save-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">
+                                <i class="fas fa-save mr-2"></i>Salvar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- PDF Preview -->
+                    <div class="pdf-preview p-6 rounded-lg border border-gray-200 mb-6" id="pdf-preview">
+                        <div class="header mb-8 text-center" id="pdf-header">
+                            <h1 class="text-3xl font-bold mb-2" contenteditable="true">Título do Documento</h1>
+                            <p class="text-gray-600" contenteditable="true">Subtítulo ou descrição breve</p>
+                        </div>
+                        
+                        <div class="content" id="pdf-content">
+                            <div class="mb-6" contenteditable="true">
+                                <h2 class="text-xl font-bold mb-3 border-b pb-2">Seção 1</h2>
+                                <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam in dui mauris. Vivamus hendrerit arcu sed erat molestie vehicula. Sed auctor neque eu tellus rhoncus ut eleifend nibh porttitor.</p>
+                                <p>Ut in nulla enim. Phasellus molestie magna non est bibendum non venenatis nisl tempor. Suspendisse dictum feugiat nisl ut dapibus.</p>
+                            </div>
+                            
+                            <div class="mb-6" contenteditable="true">
+                                <h2 class="text-xl font-bold mb-3 border-b pb-2">Seção 2</h2>
+                                <ul class="list-disc pl-5 mb-4">
+                                    <li class="mb-2">Item de lista 1</li>
+                                    <li class="mb-2">Item de lista 2</li>
+                                    <li>Item de lista 3</li>
+                                </ul>
+                                
+                                <table class="w-full border-collapse mb-4">
+                                    <thead>
+                                        <tr class="bg-gray-100">
+                                            <th class="border p-2 text-left">Cabeçalho 1</th>
+                                            <th class="border p-2 text-left">Cabeçalho 2</th>
+                                            <th class="border p-2 text-left">Cabeçalho 3</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="border p-2">Dado 1</td>
+                                            <td class="border p-2">Dado 2</td>
+                                            <td class="border p-2">Dado 3</td>
+                                        </tr>
+                                        <tr class="bg-gray-50">
+                                            <td class="border p-2">Dado 4</td>
+                                            <td class="border p-2">Dado 5</td>
+                                            <td class="border p-2">Dado 6</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="footer mt-8 pt-4 border-t text-center text-sm text-gray-500" id="pdf-footer">
+                            <p contenteditable="true">Rodapé do documento - Informações adicionais</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Add Elements -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold mb-3">Adicionar Elementos</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <button class="add-element-btn px-3 py-2 bg-white border rounded-lg flex flex-col items-center" data-element="text">
+                                <i class="fas fa-font text-xl mb-1 text-indigo-600"></i>
+                                <span>Texto</span>
+                            </button>
+                            <button class="add-element-btn px-3 py-2 bg-white border rounded-lg flex flex-col items-center" data-element="image">
+                                <i class="fas fa-image text-xl mb-1 text-indigo-600"></i>
+                                <span>Imagem</span>
+                            </button>
+                            <button class="add-element-btn px-3 py-2 bg-white border rounded-lg flex flex-col items-center" data-element="table">
+                                <i class="fas fa-table text-xl mb-1 text-indigo-600"></i>
+                                <span>Tabela</span>
+                            </button>
+                            <button class="add-element-btn px-3 py-2 bg-white border rounded-lg flex flex-col items-center" data-element="list">
+                                <i class="fas fa-list-ul text-xl mb-1 text-indigo-600"></i>
+                                <span>Lista</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        // Inicializa o jsPDF
+        const { jsPDF } = window.jspdf;
+        
+        // Configurações do documento
+        let docConfig = {
+            template: 'simple',
+            orientation: 'portrait',
+            size: 'a4',
+            margins: 'normal',
+            header: true,
+            footer: true,
+            pageNumbers: false
+        };
+        
+        // Event listeners
         $(document).ready(function() {
-            // Controle de abas
-            $('.tab-button').on('click', function() {
-                $('.tab-button').removeClass('active');
-                $(this).addClass('active');
-                
-                $('.tab-content').addClass('hidden');
-                $($(this).data('target')).removeClass('hidden');
+            // Template selection
+            $('.template-btn').click(function() {
+                $('.template-btn').removeClass('border-indigo-500 bg-indigo-50');
+                $(this).addClass('border-indigo-500 bg-indigo-50');
+                docConfig.template = $(this).data('template');
+                applyTemplate();
             });
-
-            // Simulação de funcionalidade
-            console.log('Página carregada. Adicione a lógica de geração de questionários em script.js.');
+            
+            // Orientation selection
+            $('.orientation-btn').click(function() {
+                $('.orientation-btn').removeClass('bg-indigo-600 text-white');
+                $(this).addClass('bg-indigo-600 text-white');
+                docConfig.orientation = $(this).data('orientation');
+            });
+            
+            // Margin selection
+            $('#margin-select').change(function() {
+                docConfig.margins = $(this).val();
+            });
+            
+            // Size selection
+            $('#size-select').change(function() {
+                docConfig.size = $(this).val();
+            });
+            
+            // Toggle switches
+            $('#header-toggle').change(function() {
+                docConfig.header = $(this).is(':checked');
+                $('#pdf-header').toggle(docConfig.header);
+            });
+            
+            $('#footer-toggle').change(function() {
+                docConfig.footer = $(this).is(':checked');
+                $('#pdf-footer').toggle(docConfig.footer);
+            });
+            
+            $('#pagenum-toggle').change(function() {
+                docConfig.pageNumbers = $(this).is(':checked');
+            });
+            
+            // Add elements
+            $('.add-element-btn').click(function() {
+                const elementType = $(this).data('element');
+                addElement(elementType);
+            });
+            
+            // Export PDF
+            $('#export-pdf').click(function() {
+                generatePDF();
+            });
+            
+            // Clear content
+            $('#clear-btn').click(function() {
+                $('#pdf-content').html('<div class="mb-6" contenteditable="true"><h2 class="text-xl font-bold mb-3 border-b pb-2">Nova Seção</h2><p>Comece a digitar seu conteúdo aqui...</p></div>');
+            });
+            
+            // Save document
+            $('#save-btn').click(function() {
+                alert('Documento salvo com sucesso!');
+                // Aqui você implementaria a lógica para salvar no servidor
+            });
+            
+            // Aplica o template padrão
+            $('.template-btn[data-template="simple"]').click();
         });
+        
+        // Aplica o template selecionado
+        function applyTemplate() {
+            let headerColor, textColor;
+            
+            switch(docConfig.template) {
+                case 'professional':
+                    headerColor = 'text-gray-800';
+                    textColor = 'text-gray-600';
+                    $('#pdf-preview').css('background-color', '#ffffff');
+                    break;
+                case 'academic':
+                    headerColor = 'text-blue-800';
+                    textColor = 'text-gray-700';
+                    $('#pdf-preview').css('background-color', '#f8fafc');
+                    break;
+                case 'creative':
+                    headerColor = 'text-purple-600';
+                    textColor = 'text-gray-700';
+                    $('#pdf-preview').css('background-color', '#faf5ff');
+                    break;
+                default: // simple
+                    headerColor = 'text-gray-900';
+                    textColor = 'text-gray-700';
+                    $('#pdf-preview').css('background-color', '#ffffff');
+            }
+            
+            $('#pdf-header h1').removeClass().addClass('text-3xl font-bold mb-2 ' + headerColor);
+            $('#pdf-header p').removeClass().addClass(textColor);
+            $('#pdf-content h2').removeClass().addClass('text-xl font-bold mb-3 border-b pb-2 ' + headerColor);
+            $('#pdf-content p').removeClass().addClass('mb-4 ' + textColor);
+        }
+        
+        // Adiciona novo elemento
+        function addElement(type) {
+            let elementHtml = '';
+            
+            switch(type) {
+                case 'text':
+                    elementHtml = '<div class="mb-6" contenteditable="true"><p>Novo parágrafo de texto. Comece a digitar aqui...</p></div>';
+                    break;
+                case 'image':
+                    elementHtml = `
+                        <div class="mb-6">
+                            <div class="border-2 border-dashed border-gray-300 p-4 text-center">
+                                <p class="text-gray-500 mb-2">Clique para adicionar uma imagem</p>
+                                <button class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-lg">
+                                    <i class="fas fa-upload mr-2"></i>Enviar Imagem
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'table':
+                    elementHtml = `
+                        <div class="mb-6" contenteditable="true">
+                            <table class="w-full border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="border p-2 text-left">Cabeçalho 1</th>
+                                        <th class="border p-2 text-left">Cabeçalho 2</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="border p-2">Dado 1</td>
+                                        <td class="border p-2">Dado 2</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="border p-2">Dado 3</td>
+                                        <td class="border p-2">Dado 4</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    break;
+                case 'list':
+                    elementHtml = `
+                        <div class="mb-6" contenteditable="true">
+                            <ul class="list-disc pl-5">
+                                <li class="mb-2">Item de lista 1</li>
+                                <li class="mb-2">Item de lista 2</li>
+                                <li>Item de lista 3</li>
+                            </ul>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            $('#pdf-content').append(elementHtml);
+        }
+        
+        // Gera o PDF
+        function generatePDF() {
+            // Mostra loading
+            $('#export-pdf').html('<i class="fas fa-spinner fa-spin mr-2"></i> Gerando...');
+            
+            // Usa html2canvas para capturar o conteúdo
+            html2canvas(document.getElementById('pdf-preview')).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF({
+                    orientation: docConfig.orientation,
+                    unit: 'mm',
+                    format: docConfig.size
+                });
+                
+                // Calcula as dimensões
+                const imgWidth = pdf.internal.pageSize.getWidth();
+                let imgHeight = canvas.height * imgWidth / canvas.width;
+                
+                // Adiciona a imagem ao PDF
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                
+                // Baixa o PDF
+                pdf.save('documento-gerado.pdf');
+                
+                // Restaura o botão
+                $('#export-pdf').html('<i class="fas fa-file-pdf mr-2"></i> PDF');
+            });
+        }
     </script>
-    <script src="../js/script.js"></script>
+</body>
+</html>
