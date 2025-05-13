@@ -1,119 +1,166 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Login - MontPython</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- jQuery CDN -->
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #6B7280, #1F2937);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        .login-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 1rem;
-            padding: 2.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
+        .login-card {
             max-width: 400px;
-            animation: fadeIn 0.8s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+            margin: 0 auto;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
         .form-input {
             transition: all 0.3s ease;
         }
         .form-input:focus {
-            border-color: #3B82F6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-        }
-        .error-message {
-            color: #EF4444;
-            font-size: 0.875rem;
-            display: none;
-            margin-top: 0.25rem;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
         .btn-primary {
-            background: linear-gradient(to right, #3B82F6, #1D4ED8);
-            transition: transform 0.2s ease;
+            background-color: #667eea;
+            transition: all 0.3s ease;
         }
         .btn-primary:hover {
+            background-color: #5a6fd1;
             transform: translateY(-2px);
+        }
+        .error-message {
+            display: none;
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .social-btn {
+            transition: all 0.3s ease;
+        }
+        .social-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
         }
     </style>
 </head>
-<body>
-    <div class="login-container">
-        <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Welcome Back</h2>
-        <form id="loginForm">
-            <div class="mb-4">
-                <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
-                <input type="email" id="email" name="email" class="form-input mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none" placeholder="you@example.com">
-                <p class="error-message" id="emailError">Please enter a valid email address.</p>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <div class="login-card bg-white p-8 w-full">
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <div class="flex justify-center mb-4">
+                <i class="fas fa-file-pdf text-4xl text-indigo-600"></i>
             </div>
-            <div class="mb-6">
-                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                <input type="password" id="password" name="password" class="form-input mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none" placeholder="••••••••">
-                <p class="error-message" id="passwordError">Password is required.</p>
+            <h1 class="text-3xl font-bold text-gray-800">MontPython</h1>
+            <p class="text-gray-600 mt-2">Gerador de PDFs Avançado</p>
+        </div>
+
+        <!-- Formulário de Login -->
+        <form id="loginForm" class="space-y-6">
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+                <input type="email" id="email" name="email" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="seu@email.com" required>
+                <p class="error-message" id="emailError">Por favor, insira um e-mail válido</p>
             </div>
-            <button type="submit" class="btn-primary w-full py-2 px-4 text-white font-semibold rounded-md focus:outline-none">Log In</button>
+
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
+                    <a href="#" class="text-sm text-indigo-600 hover:underline">Esqueceu a senha?</a>
+                </div>
+                <input type="password" id="password" name="password" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="••••••••" required>
+                <p class="error-message" id="passwordError">A senha deve ter pelo menos 6 caracteres</p>
+            </div>
+
+            <div class="flex items-center">
+                <input type="checkbox" id="remember" name="remember" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                <label for="remember" class="ml-2 block text-sm text-gray-700">Lembrar de mim</label>
+            </div>
+
+            <button type="submit" class="btn-primary w-full py-3 px-4 text-white font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fas fa-sign-in-alt mr-2"></i> Entrar
+            </button>
         </form>
-        <p class="mt-4 text-center text-sm text-gray-600">
-            Don't have an account? <a href="register.html" class="text-blue-600 hover:underline">Sign up</a>
-        </p>
+
+        <!-- Divisor -->
+        <div class="relative my-6">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+                <span class="px-2 bg-white text-gray-500">Ou continue com</span>
+            </div>
+        </div>
+
+        <!-- Login Social -->
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <a href="#" class="social-btn bg-red-600 text-white py-2 px-4 rounded-lg flex items-center justify-center">
+                <i class="fab fa-google mr-2"></i> Google
+            </a>
+            <a href="#" class="social-btn bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center justify-center">
+                <i class="fab fa-facebook-f mr-2"></i> Facebook
+            </a>
+        </div>
+
+        <!-- Link para Registro -->
+        <div class="text-center text-sm text-gray-600">
+            Não tem uma conta? <a href="register.html" class="text-indigo-600 font-medium hover:underline">Cadastre-se</a>
+        </div>
     </div>
 
+    <!-- JavaScript -->
     <script>
         $(document).ready(function() {
-            $('#loginForm').on('submit', function(e) {
+            // Validação do formulário
+            $('#loginForm').submit(function(e) {
                 e.preventDefault();
                 
-                // Reset error messages
+                // Resetar mensagens de erro
                 $('.error-message').hide();
                 let isValid = true;
-
-                // Validate email
-                const email = $('#email').val().trim();
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(email)) {
+                
+                // Validação de e-mail
+                const email = $('#email').val();
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                     $('#emailError').show();
                     isValid = false;
                 }
-
-                // Validate password
+                
+                // Validação de senha
                 const password = $('#password').val();
-                if (password.length === 0) {
+                if (!password || password.length < 6) {
                     $('#passwordError').show();
                     isValid = false;
                 }
-
+                
+                // Se válido, pode enviar o formulário
                 if (isValid) {
-                    // Simulate form submission
-                    alert('Login successful! (This is a demo)');
-                    $('#loginForm')[0].reset();
+                    // Simulação de login - substituir por chamada AJAX real
+                    console.log('Login submitted:', {
+                        email: email,
+                        password: password,
+                        remember: $('#remember').is(':checked')
+                    });
+                    
+                    // Redirecionamento temporário - substituir por lógica real
+                    alert('Login bem-sucedido! Redirecionando...');
+                    window.location.href = 'dashboard.html';
                 }
             });
-
-            // Add focus animation
-            $('.form-input').on('focus', function() {
-                $(this).parent().find('label').addClass('text-blue-600 font-semibold');
-            }).on('blur', function() {
-                $(this).parent().find('label').removeClass('text-blue-600 font-semibold');
+            
+            // Efeitos visuais
+            $('.form-input').focus(function() {
+                $(this).addClass('border-indigo-500');
+            }).blur(function() {
+                $(this).removeClass('border-indigo-500');
             });
         });
     </script>
-    <script src="../js/login.js"></script>
 </body>
 </html>

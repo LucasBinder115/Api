@@ -1,37 +1,45 @@
  $(document).ready(function() {
-            $('#loginForm').on('submit', function(e) {
+            // Validação do formulário
+            $('#loginForm').submit(function(e) {
                 e.preventDefault();
                 
-                // Reset error messages
+                // Resetar mensagens de erro
                 $('.error-message').hide();
                 let isValid = true;
-
-                // Validate email
-                const email = $('#email').val().trim();
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(email)) {
+                
+                // Validação de e-mail
+                const email = $('#email').val();
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                     $('#emailError').show();
                     isValid = false;
                 }
-
-                // Validate password
+                
+                // Validação de senha
                 const password = $('#password').val();
-                if (password.length === 0) {
+                if (!password || password.length < 6) {
                     $('#passwordError').show();
                     isValid = false;
                 }
-
+                
+                // Se válido, pode enviar o formulário
                 if (isValid) {
-                    // Simulate form submission
-                    alert('Login successful! (This is a demo)');
-                    $('#loginForm')[0].reset();
+                    // Simulação de login - substituir por chamada AJAX real
+                    console.log('Login submitted:', {
+                        email: email,
+                        password: password,
+                        remember: $('#remember').is(':checked')
+                    });
+                    
+                    // Redirecionamento temporário - substituir por lógica real
+                    alert('Login bem-sucedido! Redirecionando...');
+                    window.location.href = 'index.html';
                 }
             });
-
-            // Add focus animation
-            $('.form-input').on('focus', function() {
-                $(this).parent().find('label').addClass('text-blue-600 font-semibold');
-            }).on('blur', function() {
-                $(this).parent().find('label').removeClass('text-blue-600 font-semibold');
+            
+            // Efeitos visuais
+            $('.form-input').focus(function() {
+                $(this).addClass('border-indigo-500');
+            }).blur(function() {
+                $(this).removeClass('border-indigo-500');
             });
         });
