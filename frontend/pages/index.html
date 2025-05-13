@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Questionários</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Heroicons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/heroicons@2.0.13/dist/heroicons.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #6B7280, #1F2937);
+            min-height: 100vh;
+            margin: 0;
+            padding-top: 5rem;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 10;
+        }
+        .nav-link {
+            transition: color 0.3s ease, transform 0.2s ease;
+        }
+        .nav-link:hover {
+            color: #3B82F6;
+            transform: translateY(-2px);
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 2rem;
+        }
+        .btn-primary {
+            background: linear-gradient(to right, #3B82F6, #1D4ED8);
+            transition: transform 0.2s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            transition: transform 0.2s ease;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            border-bottom: 3px solid #3B82F6;
+            color: #3B82F6;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de Navegação -->
+    <nav class="navbar py-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+            <a href="home.html" class="text-xl font-bold text-gray-800">Gerador de Questionários</a>
+            <div class="flex space-x-4">
+                <a href="home.html" class="nav-link text-gray-600 hover:text-blue-600">Home</a>
+                <a href="login.html" class="nav-link text-gray-600 hover:text-blue-600">Login</a>
+                <a href="register.html" class="nav-link text-gray-600 hover:text-blue-600">Registrar</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <div class="container">
+        <div class="card">
+            <!-- Abas -->
+            <div class="flex border-b border-gray-200 mb-6">
+                <button class="tab-button px-4 py-2 text-gray-600 font-medium active" id="generate-tab" data-target="#generate">Gerar</button>
+                <button class="tab-button px-4 py-2 text-gray-600 font-medium" id="history-tab" data-target="#history">Histórico</button>
+            </div>
+
+            <!-- Aba de Geração -->
+            <div id="generate" class="tab-content">
+                <div class="mb-4">
+                    <label for="topicInput" class="block text-sm font-medium text-gray-700">Tema do Questionário:</label>
+                    <input type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="topicInput" placeholder="Ex: História do Brasil">
+                </div>
+                <button id="generateBtn" class="btn-primary flex items-center px-4 py-2 text-white font-semibold rounded-md">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Gerar Perguntas
+                </button>
+                
+                <div id="questionsContainer" class="mt-6 hidden">
+                    <h3 class="text-lg font-semibold text-gray-800">Perguntas Geradas:</h3>
+                    <div id="questionsList" class="space-y-4"></div>
+                    <button id="savePdfBtn" class="btn-primary mt-4 px-4 py-2 text-white font-semibold rounded-md">Salvar como PDF</button>
+                </div>
+            </div>
+
+            <!-- Aba de Histórico -->
+            <div id="history" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Questionários Anteriores</h3>
+                    <button id="refreshHistoryBtn" class="btn-secondary px-3 py-1 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100">Atualizar</button>
+                </div>
+                <div id="historyList" class="space-y-4"></div>
+                
+                <div id="pdfDetail" class="mt-6 hidden">
+                    <h4 class="text-md font-semibold text-gray-800">Detalhes do Questionário</h4>
+                    <div id="pdfInfo" class="bg-gray-50 p-4 rounded-md mb-4"></div>
+                    <div class="flex space-x-2">
+                        <button id="downloadPdfBtn" class="btn-primary px-4 py-2 text-white font-semibold rounded-md">Baixar PDF</button>
+                        <button id="deletePdfBtn" class="btn-secondary px-4 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-50">Excluir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Controle de abas
+            $('.tab-button').on('click', function() {
+                $('.tab-button').removeClass('active');
+                $(this).addClass('active');
+                
+                $('.tab-content').addClass('hidden');
+                $($(this).data('target')).removeClass('hidden');
+            });
+
+            // Simulação de funcionalidade
+            console.log('Página carregada. Adicione a lógica de geração de questionários em script.js.');
+        });
+    </script>
+    <script src="script.js"></script>

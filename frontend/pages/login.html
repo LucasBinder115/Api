@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #6B7280, #1F2937);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .form-input {
+            transition: all 0.3s ease;
+        }
+        .form-input:focus {
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        .error-message {
+            color: #EF4444;
+            font-size: 0.875rem;
+            display: none;
+            margin-top: 0.25rem;
+        }
+        .btn-primary {
+            background: linear-gradient(to right, #3B82F6, #1D4ED8);
+            transition: transform 0.2s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Welcome Back</h2>
+        <form id="loginForm">
+            <div class="mb-4">
+                <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                <input type="email" id="email" name="email" class="form-input mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none" placeholder="you@example.com">
+                <p class="error-message" id="emailError">Please enter a valid email address.</p>
+            </div>
+            <div class="mb-6">
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="password" name="password" class="form-input mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none" placeholder="••••••••">
+                <p class="error-message" id="passwordError">Password is required.</p>
+            </div>
+            <button type="submit" class="btn-primary w-full py-2 px-4 text-white font-semibold rounded-md focus:outline-none">Log In</button>
+        </form>
+        <p class="mt-4 text-center text-sm text-gray-600">
+            Don't have an account? <a href="register.html" class="text-blue-600 hover:underline">Sign up</a>
+        </p>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                // Reset error messages
+                $('.error-message').hide();
+                let isValid = true;
+
+                // Validate email
+                const email = $('#email').val().trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    $('#emailError').show();
+                    isValid = false;
+                }
+
+                // Validate password
+                const password = $('#password').val();
+                if (password.length === 0) {
+                    $('#passwordError').show();
+                    isValid = false;
+                }
+
+                if (isValid) {
+                    // Simulate form submission
+                    alert('Login successful! (This is a demo)');
+                    $('#loginForm')[0].reset();
+                }
+            });
+
+            // Add focus animation
+            $('.form-input').on('focus', function() {
+                $(this).parent().find('label').addClass('text-blue-600 font-semibold');
+            }).on('blur', function() {
+                $(this).parent().find('label').removeClass('text-blue-600 font-semibold');
+            });
+        });
+    </script>
+</body>
+</html>

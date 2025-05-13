@@ -1,29 +1,33 @@
+from flask import Flask, jsonify, request, send_from_directory, send_file
+from flask_cors import CORS
 import google.generativeai as genai
-import tkinter as tk
-from tkinter import messagebox, ttk
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import os
 from datetime import datetime
-from .database import QuestionDatabase
-from flask import Flask, jsonify, request
-import sys
-from pathlib import Path
+from database import QuestionDatabase
+import threading
+import logging
 
-# Add the project root to Python path
-sys.path.append(str(Path(__file__).parent.parent))
-
-
-
-# Configuração da API do Gemini
-GENAI_API_KEY = ""  # 👈 Substitua pela sua chave
-genai.configure(api_key=GENAI_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-pro-latest')
-
-# Inicializa o banco de dados
+# Configuração inicial
+app = Flask(__name__)
+CORS(app)  # Habilita CORS
 db = QuestionDatabase()
 
-# --- Parte 1: Funções de Negócio ---
+# Configuração de logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Configuração da API do Gemini
+try:
+    GENAI_API_KEY = "AIzaSyDe-AA1In-JFixZxE40-IgEz1G-2j1cVyA"
+    genai.configure(api_key=GENAI_API_KEY)
+    model = genai.GenerativeModel('gemini-1.5-pro-latest')
+except Exception as e:
+    logger.error(f"Erro ao configurar Gemini API: {str(e)}")
+    raise
+
+# Funções auxiliares
 def generate_questions(prompt, num_questions=10):
     """Gera perguntas usando a API do Gemini"""
     try:
@@ -38,32 +42,35 @@ def generate_questions(prompt, num_questions=10):
                 "max_output_tokens": 1000,
             }
         )
-        return [
+        questions = [
             line.strip() 
             for line in response.text.split('\n') 
             if line.strip() and line[0].isdigit()
-        ][:num_questions] if response.text else ["Erro: Nenhuma resposta gerada"]
+        ][:num_questions]
+        return questions if (response.text and questions) else []
     except Exception as e:
-        return [f"Erro na geração: {str(e)}"]
+        logger.error(f"Erro na geração de perguntas: {str(e)}")
+        return []
 
-def create_pdf(questions, topic, filename="perguntas_geradas.pdf"):
-    """Cria um PDF com as perguntas e salva no banco de dados"""
+def create_pdf(questions, topic):
+    """Cria um PDF com as perguntas geradas"""
     try:
+        os.makedirs('pdfs', exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        unique_filename = f"{os.path.splitext(filename)[0]}_{timestamp}.pdf"
+        filename = f"pdfs/perguntas_{timestamp}.pdf"
         
-        c = canvas.Canvas(unique_filename, pagesize=letter)
+        c = canvas.Canvas(filename, pagesize=letter)
         width, height = letter
         c.setFont("Helvetica", 12)
         y = height - 40
         
-        # Cabeçalho do PDF
-        c.drawString(30, y, f"Perguntas Geradas sobre: {topic}")
+        # Cabeçalho
+        c.drawString(30, y, f"Perguntas sobre: {topic}")
         y -= 30
-        c.drawString(30, y, "--------------------------------------------------")
+        c.drawString(30, y, "-"*50)
         y -= 30
         
-        # Conteúdo das perguntas
+        # Conteúdo
         for i, q in enumerate(questions, 1):
             if len(q) > 80:
                 parts = [q[i:i+80] for i in range(0, len(q), 80)]
@@ -73,308 +80,161 @@ def create_pdf(questions, topic, filename="perguntas_geradas.pdf"):
             else:
                 c.drawString(30, y, f"{i}. {q}")
                 y -= 20
+            
             if y < 40:
                 c.showPage()
                 y = height - 40
         
         c.save()
-        abs_path = os.path.abspath(unique_filename)
-        db.insert_pdf_record(topic, abs_path, questions)
-        return abs_path
+        return filename
     except Exception as e:
-        raise Exception(f"Erro ao criar PDF: {e}")
+        logger.error(f"Erro ao criar PDF: {str(e)}")
+        return None
 
-# --- Parte 2: Interface Tkinter ---
-class QuestionGeneratorApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Gerador de Perguntas com Gemini AI")
-        self.root.geometry("1000x700")
-        self.questions = []
-        self.current_topic = ""
-        self.setup_ui()
-    
-    def setup_ui(self):
-        self.root.configure(bg="#f0f0f0")
-        
-        # Notebook (abas)
-        self.notebook = ttk.Notebook(self.root)
-        self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
-        # Aba de geração
-        self.setup_generation_tab()
-        
-        # Aba de histórico
-        self.setup_history_tab()
-        
-        # Carrega histórico inicial
-        self.load_history()
-    
-    def setup_generation_tab(self):
-        tab = ttk.Frame(self.notebook)
-        self.notebook.add(tab, text="Gerar Perguntas")
-        
-        # Widgets da aba de geração
-        ttk.Label(tab, text="Digite o tema para gerar perguntas:", 
-                 font=("Arial", 11, "bold")).pack(pady=5)
-        
-        self.entry_prompt = ttk.Entry(tab, width=70, font=("Arial", 10))
-        self.entry_prompt.pack(pady=5, ipady=5)
-        
-        btn_frame = ttk.Frame(tab)
-        btn_frame.pack(pady=10)
-        
-        self.btn_generate = ttk.Button(btn_frame, text="Gerar Perguntas", 
-                                     command=self.on_generate)
-        self.btn_generate.pack(side=tk.LEFT, padx=5)
-        
-        self.btn_download = ttk.Button(btn_frame, text="Baixar PDF", 
-                                     command=self.on_download, state=tk.DISABLED)
-        self.btn_download.pack(side=tk.LEFT, padx=5)
-        
-        self.txt_output = tk.Text(tab, height=15, width=85, font=("Arial", 10),
-                                wrap=tk.WORD)
-        self.txt_output.pack(pady=10, fill=tk.BOTH, expand=True)
-        
-        scrollbar = ttk.Scrollbar(self.txt_output)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.txt_output.config(yscrollcommand=scrollbar.set)
-        scrollbar.config(command=self.txt_output.yview)
-    
-    def setup_history_tab(self):
-        tab = ttk.Frame(self.notebook)
-        self.notebook.add(tab, text="Histórico")
-        
-        # Treeview para histórico
-        self.tree = ttk.Treeview(tab, columns=('ID', 'Tópico', 'Data', 'Perguntas', 'Tamanho'), 
-                                show='headings')
-        
-        # Configuração das colunas
-        columns = {
-            'ID': {'width': 50, 'anchor': tk.W},
-            'Tópico': {'width': 200, 'anchor': tk.W},
-            'Data': {'width': 150, 'anchor': tk.W},
-            'Perguntas': {'width': 80, 'anchor': tk.W},
-            'Tamanho': {'width': 100, 'anchor': tk.W}
-        }
-        
-        for col, config in columns.items():
-            self.tree.heading(col, text=col, anchor=config['anchor'])
-            self.tree.column(col, width=config['width'], minwidth=config['width']-20)
-        
-        # Scrollbar e botões
-        scrollbar = ttk.Scrollbar(tab, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscrollcommand=scrollbar.set)
-        
-        btn_frame = ttk.Frame(tab)
-        
-        self.btn_view = ttk.Button(btn_frame, text="Visualizar", 
-                                 command=self.on_view_history, state=tk.DISABLED)
-        self.btn_view.pack(side=tk.LEFT, padx=5)
-        
-        self.btn_open = ttk.Button(btn_frame, text="Abrir PDF", 
-                                 command=self.on_open_pdf, state=tk.DISABLED)
-        self.btn_open.pack(side=tk.LEFT, padx=5)
-        
-        self.btn_delete = ttk.Button(btn_frame, text="Excluir", 
-                                   command=self.on_delete_history, state=tk.DISABLED)
-        self.btn_delete.pack(side=tk.LEFT, padx=5)
-        
-        self.btn_refresh = ttk.Button(btn_frame, text="Atualizar", 
-                                    command=self.load_history)
-        self.btn_refresh.pack(side=tk.LEFT, padx=5)
-        
-        # Layout
-        self.tree.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=10, pady=10)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        btn_frame.pack(side=tk.BOTTOM, pady=10)
-        
-        # Evento de seleção
-        self.tree.bind('<<TreeviewSelect>>', self.on_history_select)
-    
-    # Métodos de controle
-    def load_history(self):
-        for item in self.tree.get_children():
-            self.tree.delete(item)
-            
-        pdfs = db.get_all_pdfs()
-        for pdf in pdfs:
-            self.tree.insert('', 'end', values=(
-                pdf[0], pdf[1], pdf[4], pdf[3], f"{pdf[5]:.2f}"
-            ))
-    
-    def on_history_select(self, event):
-        selected = bool(self.tree.selection())
-        for btn in [self.btn_view, self.btn_open, self.btn_delete]:
-            btn.state(['!disabled' if selected else 'disabled'])
-    
-    def on_view_history(self):
-        selected = self.tree.selection()
-        if not selected:
-            return
-            
-        pdf_id = self.tree.item(selected[0], 'values')[0]
-        pdf_data = db.get_pdf_by_id(pdf_id)
-        
-        if not pdf_data:
-            messagebox.showerror("Erro", "Não foi possível carregar os dados do PDF.")
-            return
-        
-        view_window = tk.Toplevel(self.root)
-        view_window.title(f"Perguntas: {pdf_data['topic']}")
-        view_window.geometry("800x600")
-        
-        # Frame principal
-        main_frame = ttk.Frame(view_window)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
-        # Informações do PDF
-        info_frame = ttk.LabelFrame(main_frame, text="Informações do Questionário")
-        info_frame.pack(fill=tk.X, pady=5)
-        
-        info_text = f"""Tópico: {pdf_data['topic']}
-Gerado em: {pdf_data['generated_at']}
-Número de perguntas: {pdf_data['num_questions']}
-Tamanho do arquivo: {pdf_data['file_size_kb']:.2f} KB
-Local: {pdf_data['file_path']}"""
-        
-        ttk.Label(info_frame, text=info_text, justify=tk.LEFT).pack(fill=tk.X)
-        
-        # Perguntas
-        text_frame = ttk.Frame(main_frame)
-        text_frame.pack(fill=tk.BOTH, expand=True)
-        
-        text_area = tk.Text(text_frame, wrap=tk.WORD, font=("Arial", 10))
-        text_area.pack(fill=tk.BOTH, expand=True)
-        
-        scrollbar = ttk.Scrollbar(text_area)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        text_area.config(yscrollcommand=scrollbar.set)
-        scrollbar.config(command=text_area.yview)
-        
-        for q in pdf_data['questions']:
-            text_area.insert(tk.END, f"{q[0]}. {q[1]}\n\n")
-        
-        text_area.config(state=tk.DISABLED)
-    
-    def on_open_pdf(self):
-        selected = self.tree.selection()
-        if not selected:
-            return
-            
-        pdf_id = self.tree.item(selected[0], 'values')[0]
-        pdf_data = db.get_pdf_by_id(pdf_id)
-        
-        if pdf_data and os.path.exists(pdf_data['file_path']):
-            try:
-                os.startfile(pdf_data['file_path'])
-            except:
-                messagebox.showerror("Erro", "Não foi possível abrir o PDF.")
-        else:
-            messagebox.showerror("Erro", "Arquivo PDF não encontrado!")
-    
-    def on_delete_history(self):
-        selected = self.tree.selection()
-        if not selected:
-            return
-            
-        pdf_id = self.tree.item(selected[0], 'values')[0]
-        pdf_data = db.get_pdf_by_id(pdf_id)
-        
-        if not pdf_data:
-            messagebox.showerror("Erro", "Registro não encontrado!")
-            return
-        
-        if messagebox.askyesno("Confirmar", f"Excluir permanentemente o PDF sobre '{pdf_data['topic']}'?"):
-            # Remove arquivo físico
-            if os.path.exists(pdf_data['file_path']):
-                try:
-                    os.remove(pdf_data['file_path'])
-                except Exception as e:
-                    messagebox.showwarning("Aviso", f"Arquivo PDF não pôde ser removido: {e}")
-            
-            # Remove do banco de dados
-            if db.delete_pdf_record(pdf_id):
-                messagebox.showinfo("Sucesso", "Registro removido com sucesso!")
-                self.load_history()
-            else:
-                messagebox.showerror("Erro", "Falha ao remover registro do banco de dados.")
-    
-    def on_generate(self):
-        self.current_topic = self.entry_prompt.get().strip()
-        if not self.current_topic:
-            messagebox.showwarning("Aviso", "Por favor, digite um tema!")
-            return
-        
-        self.btn_generate.config(state=tk.DISABLED, text="Gerando...")
-        self.root.update()
-        
-        try:
-            self.questions = generate_questions(self.current_topic)
-            self.txt_output.delete(1.0, tk.END)
-            for q in self.questions:
-                self.txt_output.insert(tk.END, f"{q}\n\n")
-            
-            self.btn_download.state(['!disabled'])
-        
-        except Exception as e:
-            messagebox.showerror("Erro", f"Falha na geração:\n{str(e)}")
-        
-        finally:
-            self.btn_generate.config(state=tk.NORMAL, text="Gerar Perguntas")
-    
-    def on_download(self):
-        if self.questions and self.current_topic:
-            try:
-                filename = create_pdf(self.questions, self.current_topic)
-                messagebox.showinfo("Sucesso", f"PDF gerado com sucesso!\nLocal: {filename}")
-                self.load_history()
-            except Exception as e:
-                messagebox.showerror("Erro no PDF", str(e))
-        else:
-            messagebox.showwarning("Aviso", "Gere perguntas primeiro!")
-
-# --- Parte 3: Aplicação Flask (API) ---
-
-
-def create_flask_app():
-    app = Flask(__name__)
-    
-    @app.route('/api/users')
-    def api_users():
-        users = db.get_users_list()
-        return jsonify(users)
-    
-    @app.route('/api/register', methods=['POST'])
-    def api_register():
+# Rotas da API
+@app.route('/api/generate', methods=['POST'])
+def api_generate():
+    try:
         data = request.get_json()
-        username = data.get('username')
-        email = data.get('email')
-        password = data.get('password')
+        if not data:
+            return jsonify({"error": "Dados não fornecidos"}), 400
+            
+        topic = data.get('topic', '').strip()
+        if not topic:
+            return jsonify({"error": "Tópico é obrigatório"}), 400
         
-        if not username or not password:
-            return jsonify({"success": False, "message": "Usuário e senha são obrigatórios"}), 400
+        questions = generate_questions(topic)
+        if not questions:
+            return jsonify({"error": "Falha ao gerar perguntas"}), 500
         
-        if len(password) < 6:
-            return jsonify({"success": False, "message": "Senha deve ter pelo menos 6 caracteres"}), 400
-        
-        user_id = db.add_user_with_email(username, email, password)
-        if user_id:
-            return jsonify({"success": True, "message": "Usuário criado com sucesso"})
-        
-        return jsonify({"success": False, "message": "Nome de usuário já existe"}), 409
-    
-    return app
+        return jsonify({"questions": questions})
+    except Exception as e:
+        logger.error(f"Erro em /api/generate: {str(e)}")
+        return jsonify({"error": "Erro interno no servidor"}), 500
 
-# --- Execução Principal ---
+@app.route('/api/save-pdf', methods=['POST'])
+def api_save_pdf():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Dados não fornecidos"}), 400
+            
+        topic = data.get('topic', '').strip()
+        questions = data.get('questions', [])
+        
+        if not topic or not questions:
+            return jsonify({"error": "Dados incompletos"}), 400
+        
+        pdf_path = create_pdf(questions, topic)
+        if not pdf_path:
+            return jsonify({"error": "Falha ao criar PDF"}), 500
+        
+        pdf_id = db.insert_pdf_record(topic, pdf_path, questions)
+        if not pdf_id:
+            return jsonify({"error": "Falha ao salvar no banco de dados"}), 500
+        
+        return jsonify({
+            "success": True, 
+            "pdf_id": pdf_id, 
+            "pdf_path": pdf_path
+        })
+    except Exception as e:
+        logger.error(f"Erro em /api/save-pdf: {str(e)}")
+        return jsonify({"error": "Erro interno no servidor"}), 500
+
+@app.route('/api/history')
+def api_history():
+    try:
+        pdfs = db.get_all_pdfs()
+        if not pdfs:
+            return jsonify([])
+            
+        history = [{
+            "id": pdf[0],
+            "topic": pdf[1],
+            "file_path": pdf[2],
+            "num_questions": pdf[3],
+            "generated_at": pdf[4],
+            "file_size_kb": float(pdf[5]) if pdf[5] else 0.0
+        } for pdf in pdfs]
+        
+        return jsonify(history)
+    except Exception as e:
+        logger.error(f"Erro em /api/history: {str(e)}")
+        return jsonify({"error": "Erro ao carregar histórico"}), 500
+
+@app.route('/api/pdf/<int:pdf_id>')
+def api_get_pdf(pdf_id):
+    try:
+        pdf_data = db.get_pdf_by_id(pdf_id)
+        if not pdf_data:
+            return jsonify({"error": "PDF não encontrado"}), 404
+        
+        return jsonify({
+            "topic": pdf_data['topic'],
+            "questions": [{"number": q[0], "text": q[1]} for q in pdf_data['questions']],
+            "generated_at": pdf_data['generated_at'],
+            "file_size_kb": float(pdf_data['file_size_kb']) if pdf_data['file_size_kb'] else 0.0
+        })
+    except Exception as e:
+        logger.error(f"Erro em /api/pdf/{pdf_id}: {str(e)}")
+        return jsonify({"error": "Erro ao recuperar PDF"}), 500
+
+@app.route('/api/download/<int:pdf_id>')
+def api_download_pdf(pdf_id):
+    try:
+        pdf_data = db.get_pdf_by_id(pdf_id)
+        if not pdf_data:
+            return jsonify({"error": "PDF não encontrado"}), 404
+            
+        if not os.path.exists(pdf_data['file_path']):
+            return jsonify({"error": "Arquivo PDF não existe"}), 404
+        
+        return send_file(
+            pdf_data['file_path'],
+            as_attachment=True,
+            download_name=f"questionario_{pdf_id}.pdf"
+        )
+    except Exception as e:
+        logger.error(f"Erro em /api/download/{pdf_id}: {str(e)}")
+        return jsonify({"error": "Erro ao baixar PDF"}), 500
+
+@app.route('/api/delete/<int:pdf_id>', methods=['DELETE'])
+def api_delete_pdf(pdf_id):
+    try:
+        pdf_data = db.get_pdf_by_id(pdf_id)
+        if not pdf_data:
+            return jsonify({"error": "Registro não encontrado"}), 404
+        
+        file_path = db.delete_pdf_record(pdf_id)
+        if file_path and os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except Exception as e:
+                logger.error(f"Erro ao remover arquivo {file_path}: {str(e)}")
+        
+        return jsonify({"success": True})
+    except Exception as e:
+        logger.error(f"Erro em /api/delete/{pdf_id}: {str(e)}")
+        return jsonify({"error": "Erro ao deletar PDF"}), 500
+
+# Rotas para servir o frontend
+@app.route('/')
+def serve_frontend():
+    return send_from_directory('frontend', 'index.html')
+
+@app.route('/<path:path>')
+def serve_static(path):
+    return send_from_directory('frontend', path)
+
 if __name__ == "__main__":
-    # Inicia a interface gráfica
-    root = tk.Tk()
-    app = QuestionGeneratorApp(root)
+    # Cria pastas necessárias
+    os.makedirs('frontend', exist_ok=True)
+    os.makedirs('pdfs', exist_ok=True)
     
-    # Inicia o servidor Flask em uma thread separada
-    import threading
-    flask_app = create_flask_app()
-    threading.Thread(target=lambda: flask_app.run(port=5000), daemon=True).start()
+    # Configurações do servidor
+    host = '0.0.0.0'
+    port = 5000
     
-    root.mainloop()
+    logger.info(f"Iniciando servidor em http://{host}:{port}")
+    app.run(host=host, port=port, threaded=True, debug=True)

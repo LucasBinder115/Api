@@ -1,7 +1,6 @@
 import sqlite3
-import hashlib
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 
 class QuestionDatabase:
     def __init__(self, db_name='questions.db'):
@@ -23,7 +22,7 @@ class QuestionDatabase:
                 pdf_id INTEGER NOT NULL,
                 question_number INTEGER NOT NULL,
                 question_text TEXT NOT NULL,
-                FOREIGN KEY (pdf_id) REFERENCES generated_pdfs (id))'''
+                FOREIGN KEY (pdf_id) REFERENCES generated_pdfs (id) ON DELETE CASCADE)'''
         ]
         
         with self._get_connection() as conn:
@@ -33,9 +32,10 @@ class QuestionDatabase:
             conn.commit()
 
     def _get_connection(self):
-        return sqlite3.connect(self.db_name)
+        conn = sqlite3.connect(self.db_name)
+        conn.execute("PRAGMA foreign_keys = ON")
+        return conn
 
-    # Métodos para PDFs
     def insert_pdf_record(self, topic, file_path, questions):
         try:
             file_size_kb = os.path.getsize(file_path) / 1024
@@ -64,8 +64,7 @@ class QuestionDatabase:
             print(f"Erro ao inserir PDF: {e}")
             return None
 
-    def get_all_pdfs(self, limit=10):
-        """Recupera todos os PDFs ordenados por data"""
+    def get_all_pdfs(self, limit=100):
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('''
@@ -77,7 +76,6 @@ class QuestionDatabase:
             return cursor.fetchall()
 
     def get_pdf_by_id(self, pdf_id):
-        """Recupera um PDF específico com todas suas perguntas"""
         with self._get_connection() as conn:
             cursor = conn.cursor()
             
@@ -109,15 +107,18 @@ class QuestionDatabase:
             }
 
     def delete_pdf_record(self, pdf_id):
-        """Remove um PDF e suas perguntas relacionadas"""
         with self._get_connection() as conn:
             cursor = conn.cursor()
             
             cursor.execute('SELECT file_path FROM generated_pdfs WHERE id = ?', (pdf_id,))
-            file_path = cursor.fetchone()[0]
+            result = cursor.fetchone()
+            if not result:
+                return None
+                
+            file_path = result[0]
             
-            cursor.execute('DELETE FROM questions WHERE pdf_id = ?', (pdf_id,))
             cursor.execute('DELETE FROM generated_pdfs WHERE id = ?', (pdf_id,))
-            
             conn.commit()
+            
             return file_path
+        sqlite3 questions.db "SELECT name FROM sqlite_master WHERE type='table';"
