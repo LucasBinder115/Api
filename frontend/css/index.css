@@ -1,49 +1,46 @@
-/* Variáveis de cores */
 :root {
-  --primary-color: #4f46e5;
-  --primary-hover: #4338ca;
-  --secondary-color: #f9fafb;
+  --primary-color: #7c3aed;
+  --primary-hover: #6d28d9;
+  --secondary-color: #f3f4f6;
+  --background-color: #f9f9fb;
   --text-color: #1f2937;
   --text-light: #6b7280;
   --border-color: #e5e7eb;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.1);
 }
 
-/* Reset e Base */
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Inter', sans-serif;
   margin: 0;
   padding: 0;
-  background-color: var(--secondary-color);
+  background-color: var(--background-color);
   color: var(--text-color);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
-/* Layout */
 .container {
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
+  margin: auto;
+  padding: 2rem;
 }
 
-/* Cards */
+/* Card */
 .card {
   background: white;
+  border-radius: 0.75rem;
   padding: 2rem;
-  border-radius: 0.5rem;
   box-shadow: var(--shadow-md);
-  margin-bottom: 1.5rem;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-6px);
   box-shadow: var(--shadow-lg);
 }
 
-/* Formulários */
+/* Formulário */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -53,16 +50,17 @@ body {
 
 .form-input {
   padding: 0.75rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 0.375rem;
   font-size: 1rem;
-  transition: border-color 0.2s;
+  border: 2px solid transparent;
+  border-radius: 0.5rem;
+  background-color: #fff;
+  transition: border 0.3s, box-shadow 0.3s;
 }
 
 .form-input:focus {
-  outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.2);
+  outline: none;
 }
 
 /* Botões */
@@ -71,37 +69,43 @@ body {
   align-items: center;
   justify-content: center;
   padding: 0.75rem 1.5rem;
-  border-radius: 0.375rem;
-  font-weight: 500;
+  border-radius: 0.5rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  text-decoration: none;
 }
 
 .btn-primary {
-  background-color: var(--primary-color);
-  color: white;
+  background: linear-gradient(to right, #7c3aed, #6d28d9);
+  color: #fff;
   border: none;
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-hover);
+  background: linear-gradient(to right, #6d28d9, #5b21b6);
 }
 
 .btn-outline {
-  background-color: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-color);
+  background: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
 }
 
 .btn-outline:hover {
-  background-color: var(--secondary-color);
+  background: var(--primary-color);
+  color: #fff;
 }
 
 /* Navegação */
 .navbar {
   background-color: white;
   box-shadow: var(--shadow-sm);
-  padding: 1rem 0;
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .nav-container {
@@ -117,9 +121,9 @@ body {
 
 .nav-link {
   color: var(--text-light);
-  text-decoration: none;
   font-weight: 500;
-  transition: color 0.2s;
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
 
 .nav-link:hover {
@@ -131,21 +135,58 @@ body {
   gap: 1rem;
 }
 
-/* Tabelas */
+/* Tabela */
 .table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 1rem;
 }
 
-.table th, .table td {
+.table th,
+.table td {
   padding: 1rem;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
 }
 
 .table th {
-  font-weight: 600;
   color: var(--text-color);
+  font-weight: 600;
+  background-color: #f3f4f6;
+}
+
+/* Upload */
+.file-upload-container {
+  border: 2px dashed var(--primary-color);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+  background-color: #fff;
+  transition: background-color 0.3s ease;
+}
+
+.file-upload-container:hover {
+  background-color: #f5f3ff;
+}
+
+.conversion-status {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  display: none;
+}
+
+.conversion-status.success {
+  background-color: #ecfdf5;
+  color: #047857;
+  display: block;
+}
+
+.conversion-status.error {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  display: block;
 }
 
 /* Utilidades */
@@ -157,37 +198,17 @@ body {
   text-align: center;
 }
 
-/* Efeitos de hover para elementos interativos */
 .interactive {
-  transition: all 0.2s;
   cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
 .interactive:hover {
-  opacity: 0.9;
+  transform: scale(1.02);
 }
 
-/* Estiliza a barra de navegação */
-nav {
-    position: sticky; /* ou 'fixed' se quiser que fique sempre no topo */
-    top: 0;
-    z-index: 50;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Ajusta o container principal para não sobrepor a navbar */
-.container {
-    padding-top: 1rem;
-}
-
-/* Estiliza os links da navbar */
-nav a {
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-}
-
-/* Garante que o fundo gradiente não interfira */
+/* Gradiente de fundo opcional */
 .gradient-bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
 }

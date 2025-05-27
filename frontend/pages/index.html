@@ -3,243 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MONTYPDF©</title>
+    <title>MONTYPDF© - Conversor e Editor de Documentos</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <script src="../js/script.js"></script>
+    <!-- Metatags para SEO -->
+    <meta name="description" content="Editor e conversor avançado de PDF, DOCX, EPUB e outros formatos de documentos">
     
+    <!-- Favicon -->
+    <link rel="icon" href="../assets/favicon.ico" type="image/x-icon">
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/index.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
-    <link rel="stylesheet" href="../css/index.css">
-       
-    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.3.93/epub.min.js"></script>
 </head>
 <body class="gradient-bg min-h-screen text-gray-800">
-    <div class="container mx-auto px-4 py-12">
+    <!-- Navigation -->
+    <nav class="bg-indigo-600 text-white py-4 px-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">MONTYPDF©</h1>
+            <div class="space-x-4">
+                <a href="login.html" class="hover:text-indigo-200 transition">Login</a>
+                <a href="register.html" class="hover:text-indigo-200 transition">Registrar</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-8">
         <!-- Header -->
-        <header class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-white mb-4">MONTYPDF</h1>
-            <p class="text-xl text-white opacity-90">Gerador de PDFs avançado com múltiplas opções</p>
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">MONTYPDF</h1>
+            <p class="text-xl text-white opacity-90">Conversor e Editor de Documentos Multiformato</p>
         </header>
 
-        <!-- Main Content -->
+        <!-- Main Content Grid -->
         <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
             <div class="grid md:grid-cols-3">
-                <!-- Sidebar -->
-                <div class="bg-gray-50 p-6 md:p-8 border-r border-gray-200">
+                <!-- Sidebar de Opções -->
+                <aside class="bg-gray-50 p-6 md:p-8 border-r border-gray-200">
                     <h2 class="text-2xl font-bold mb-6 text-gray-800">Opções</h2>
                     
-                    <!-- Template Selection -->
-                    <div class="mb-8">
+                    <!-- Seção de Conversão de Arquivos -->
+                    <section class="mb-8">
+                        <h3 class="text-lg font-semibold mb-3 flex items-center">
+                            <i class="fas fa-exchange-alt mr-2 text-indigo-600"></i>
+                            Conversão de Arquivos
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="file-upload-container">
+                                <input type="file" id="file-input" class="hidden" accept=".pdf,.docx,.epub,.txt,.html,.odt,.rtf">
+                                <label for="file-input" class="block w-full bg-indigo-600 text-white py-2 px-4 rounded-lg text-center cursor-pointer hover:bg-indigo-700 transition">
+                                    <i class="fas fa-upload mr-2"></i>Selecionar Arquivo
+                                </label>
+                                <div id="file-info" class="mt-2 text-sm text-gray-600 hidden"></div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <span>Formato de saída</span>
+                                <select class="border rounded px-3 py-1" id="output-format">
+                                    <option value="pdf">PDF</option>
+                                    <option value="docx">DOCX (Word)</option>
+                                    <option value="epub">EPUB</option>
+                                    <option value="html">HTML</option>
+                                    <option value="txt">Texto Simples</option>
+                                </select>
+                            </div>
+                            
+                            <button id="convert-btn" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg flex items-center justify-center hover:bg-green-700 transition">
+                                <i class="fas fa-sync-alt mr-2"></i> Converter Arquivo
+                            </button>
+                        </div>
+                    </section>
+                    
+                    <!-- Seção de Modelos -->
+                    <section class="mb-8">
                         <h3 class="text-lg font-semibold mb-3 flex items-center">
                             <i class="fas fa-palette mr-2 text-indigo-600"></i>
-                            Modelos
+                            Modelos de Documento
                         </h3>
                         <div class="grid grid-cols-2 gap-3">
-                            <button class="template-btn option-card bg-white p-3 rounded-lg border border-gray-200 flex flex-col items-center" data-template="simple">
+                            <button class="template-btn option-card" data-template="simple">
                                 <i class="fas fa-file-alt text-3xl mb-2 text-indigo-600"></i>
                                 <span>Simples</span>
                             </button>
-                            <button class="template-btn option-card bg-white p-3 rounded-lg border border-gray-200 flex flex-col items-center" data-template="professional">
+                            <button class="template-btn option-card" data-template="professional">
                                 <i class="fas fa-briefcase text-3xl mb-2 text-indigo-600"></i>
                                 <span>Profissional</span>
                             </button>
-                            <button class="template-btn option-card bg-white p-3 rounded-lg border border-gray-200 flex flex-col items-center" data-template="academic">
+                            <button class="template-btn option-card" data-template="academic">
                                 <i class="fas fa-graduation-cap text-3xl mb-2 text-indigo-600"></i>
                                 <span>Acadêmico</span>
                             </button>
-                            <button class="template-btn option-card bg-white p-3 rounded-lg border border-gray-200 flex flex-col items-center" data-template="creative">
+                            <button class="template-btn option-card" data-template="creative">
                                 <i class="fas fa-paint-brush text-3xl mb-2 text-indigo-600"></i>
                                 <span>Criativo</span>
                             </button>
                         </div>
-                    </div>
+                    </section>
                     
-                    <!-- Layout Options -->
-                    <div class="mb-8">
+                    <!-- Seção de Configurações -->
+                    <section class="mb-8">
                         <h3 class="text-lg font-semibold mb-3 flex items-center">
-                            <i class="fas fa-layer-group mr-2 text-indigo-600"></i>
-                            Layout
+                            <i class="fas fa-cog mr-2 text-indigo-600"></i>
+                            Configurações
                         </h3>
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <span>Margens</span>
-                                <select class="border rounded px-3 py-1 w-24" id="margin-select">
-                                    <option value="normal">Normal</option>
-                                    <option value="narrow">Estreitas</option>
-                                    <option value="wide">Largas</option>
-                                </select>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span>Orientação</span>
-                                <div class="flex items-center space-x-2">
-                                    <button class="orientation-btn px-3 py-1 rounded border" data-orientation="portrait">Retrato</button>
-                                    <button class="orientation-btn px-3 py-1 rounded border" data-orientation="landscape">Paisagem</button>
+                        <div class="space-y-4">
+                            <!-- Layout -->
+                            <div>
+                                <h4 class="font-medium mb-2">Layout</h4>
+                                <div class="space-y-3 pl-2">
+                                    <div class="flex items-center justify-between">
+                                        <span>Margens</span>
+                                        <select class="border rounded px-3 py-1" id="margin-select">
+                                            <option value="normal">Normal</option>
+                                            <option value="narrow">Estreitas</option>
+                                            <option value="wide">Largas</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span>Orientação</span>
+                                        <div class="flex space-x-2">
+                                            <button class="orientation-btn active" data-orientation="portrait">Retrato</button>
+                                            <button class="orientation-btn" data-orientation="landscape">Paisagem</button>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span>Tamanho</span>
+                                        <select class="border rounded px-3 py-1" id="size-select">
+                                            <option value="a4">A4</option>
+                                            <option value="letter">Carta</option>
+                                            <option value="legal">Legal</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <span>Tamanho</span>
-                                <select class="border rounded px-3 py-1 w-24" id="size-select">
-                                    <option value="a4">A4</option>
-                                    <option value="letter">Carta</option>
-                                    <option value="legal">Legal</option>
-                                </select>
+                            
+                            <!-- Elementos do Documento -->
+                            <div>
+                                <h4 class="font-medium mb-2">Elementos</h4>
+                                <div class="space-y-3 pl-2">
+                                    <div class="flex items-center justify-between">
+                                        <span>Cabeçalho</span>
+                                        <label class="switch">
+                                            <input type="checkbox" id="header-toggle" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span>Rodapé</span>
+                                        <label class="switch">
+                                            <input type="checkbox" id="footer-toggle" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span>Números de página</span>
+                                        <label class="switch">
+                                            <input type="checkbox" id="pagenum-toggle">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </section>
                     
-                    <!-- Content Options -->
-                    <div class="mb-8">
-                        <h3 class="text-lg font-semibold mb-3 flex items-center">
-                            <i class="fas fa-edit mr-2 text-indigo-600"></i>
-                            Conteúdo
-                        </h3>
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <span>Cabeçalho</span>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="toggle-checkbox sr-only" id="header-toggle" checked>
-                                    <div class="toggle-label w-11 h-6 bg-gray-200 rounded-full"></div>
-                                </label>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span>Rodapé</span>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="toggle-checkbox sr-only" id="footer-toggle" checked>
-                                    <div class="toggle-label w-11 h-6 bg-gray-200 rounded-full"></div>
-                                </label>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span>Números de página</span>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="toggle-checkbox sr-only" id="pagenum-toggle">
-                                    <div class="toggle-label w-11 h-6 bg-gray-200 rounded-full"></div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Export Options -->
-                    <div>
+                    <!-- Seção de Exportação -->
+                    <section>
                         <h3 class="text-lg font-semibold mb-3 flex items-center">
                             <i class="fas fa-file-export mr-2 text-indigo-600"></i>
-                            Exportar
+                            Exportar Documento
                         </h3>
                         <div class="grid grid-cols-2 gap-3">
-                            <button id="export-pdf" class="bg-indigo-600 text-white py-2 px-4 rounded-lg flex items-center justify-center">
+                            <button id="export-pdf" class="export-btn bg-indigo-600">
                                 <i class="fas fa-file-pdf mr-2"></i> PDF
                             </button>
-                            <button id="export-html" class="bg-gray-200 py-2 px-4 rounded-lg flex items-center justify-center">
+                            <button id="export-html" class="export-btn bg-gray-200 text-gray-800">
                                 <i class="fas fa-code mr-2"></i> HTML
                             </button>
                         </div>
-                    </div>
-                </div>
+                    </section>
+                </aside>
                 
-                <!-- Editor Area -->
-                <div class="md:col-span-2 p-6 md:p-8">
+                <!-- Área Principal do Editor -->
+                <main class="md:col-span-2 p-6 md:p-8">
+                    <!-- Barra de Ferramentas do Editor -->
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold">Editor de PDF</h2>
+                        <h2 class="text-2xl font-bold">Editor de Documentos</h2>
                         <div class="flex space-x-2">
-                            <button id="clear-btn" class="px-4 py-2 border rounded-lg text-gray-600">
+                            <button id="clear-btn" class="toolbar-btn text-gray-600 border">
                                 <i class="fas fa-trash-alt mr-2"></i>Limpar
                             </button>
-                            <button id="save-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">
+                            <button id="save-btn" class="toolbar-btn bg-indigo-600 text-white">
                                 <i class="fas fa-save mr-2"></i>Salvar
                             </button>
                         </div>
                     </div>
                     
-                    <!-- PDF Preview -->
-                    <div class="pdf-preview p-6 rounded-lg border border-gray-200 mb-6" id="pdf-preview">
-                        <div class="header mb-8 text-center" id="pdf-header">
-                            <h1 class="text-3xl font-bold mb-2" contenteditable="true">Título do Documento</h1>
-                            <p class="text-gray-600" contenteditable="true">Subtítulo ou descrição breve</p>
-                        </div>
+                    <!-- Visualização do Documento -->
+                    <article class="document-preview" id="document-preview">
+                        <header class="document-header" id="document-header" contenteditable="true">
+                            <h1 class="document-title">Título do Documento</h1>
+                            <p class="document-subtitle">Subtítulo ou descrição breve</p>
+                        </header>
                         
-                        <div class="content" id="pdf-content">
-                            <div class="mb-6" contenteditable="true">
-                                <h2 class="text-xl font-bold mb-3 border-b pb-2"> vehicula. Sed auctor neque eu tellus rhoncus ut eleifend nibh porttitor.</p>
-                                <p>Ut in nulla enim. Phasellus molestie magna non est bibendum non venenatis nisl tempor. Suspendisse dictum feugiat nisl ut dapibus.</p>
+                        <section class="document-content" id="document-content">
+                            <div class="document-section" contenteditable="true">
+                                <h2 class="section-title">Introdução</h2>
+                                <p>Este é um documento de exemplo. Você pode editar todo este conteúdo diretamente.</p>
+                                <p>O MONTYPDF permite criar, editar e converter documentos entre diversos formatos.</p>
                             </div>
                             
-                            <div class="mb-6" contenteditable="true">
-                                <h2 class="text-xl font-bold mb-3 border-b pb-2">Seção 2</h2>
-                                <ul class="list-disc pl-5 mb-4">
-                                    <li class="mb-2">Item de lista 1</li>
-                                    <li class="mb-2">Item de lista 2</li>
-                                    <li>Item de lista 3</li>
+                            <div class="document-section" contenteditable="true">
+                                <h2 class="section-title">Recursos</h2>
+                                <ul class="document-list">
+                                    <li>Conversão entre múltiplos formatos</li>
+                                    <li>Editor WYSIWYG (What You See Is What You Get)</li>
+                                    <li>Modelos pré-definidos</li>
+                                    <li>Personalização completa do layout</li>
                                 </ul>
                                 
-                                <table class="w-full border-collapse mb-4">
+                                <table class="document-table">
                                     <thead>
-                                        <tr class="bg-gray-100">
-                                            <th class="border p-2 text-left">Cabeçalho 1</th>
-                                            <th class="border p-2 text-left">Cabeçalho 2</th>
-                                            <th class="border p-2 text-left">Cabeçalho 3</th>
+                                        <tr>
+                                            <th>Formato</th>
+                                            <th>Entrada</th>
+                                            <th>Saída</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td class="border p-2">Dado 1</td>
-                                            <td class="border p-2">Dado 2</td>
-                                            <td class="border p-2">Dado 3</td>
+                                            <td>PDF</td>
+                                            <td><i class="fas fa-check text-green-500"></i></td>
+                                            <td><i class="fas fa-check text-green-500"></i></td>
                                         </tr>
-                                        <tr class="bg-gray-50">
-                                            <td class="border p-2">Dado 4</td>
-                                            <td class="border p-2">Dado 5</td>
-                                            <td class="border p-2">Dado 6</td>
+                                        <tr>
+                                            <td>DOCX</td>
+                                            <td><i class="fas fa-check text-green-500"></i></td>
+                                            <td><i class="fas fa-check text-green-500"></i></td>
+                                        </tr>
+                                        <tr>
+                                            <td>EPUB</td>
+                                            <td><i class="fas fa-check text-green-500"></i></td>
+                                            <td><i class="fas fa-check text-green-500"></i></td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                        </section>
                         
-                        <div class="footer mt-8 pt-4 border-t text-center text-sm text-gray-500" id="pdf-footer">
-                            <p contenteditable="true">Rodapé do documento - Informações adicionais</p>
-                        </div>
-                    </div>
+                        <footer class="document-footer" id="document-footer" contenteditable="true">
+                            <p>© 2023 MONTYPDF - Todos os direitos reservados</p>
+                        </footer>
+                    </article>
                     
-                    <!-- Add Elements -->
-                    <div class="bg-gray-50 p-4 rounded-lg">
+                    <!-- Adicionar Elementos -->
+                    <div class="bg-gray-50 p-4 rounded-lg mt-6">
                         <h3 class="text-lg font-semibold mb-3">Adicionar Elementos</h3>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <button class="add-element-btn px-3 py-2 bg-white border rounded-lg flex flex-col items-center" data-element="text">
+                            <button class="element-btn" data-element="text">
                                 <i class="fas fa-font text-xl mb-1 text-indigo-600"></i>
                                 <span>Texto</span>
                             </button>
-                            <button class="add-element-btn px-3 py-2 bg-white border rounded-lg flex flex-col items-center" data-element="image">
+                            <button class="element-btn" data-element="image">
                                 <i class="fas fa-image text-xl mb-1 text-indigo-600"></i>
                                 <span>Imagem</span>
                             </button>
-                            <button class="add-element-btn px-3 py-2 bg-white border rounded-lg flex flex-col items-center" data-element="table">
+                            <button class="element-btn" data-element="table">
                                 <i class="fas fa-table text-xl mb-1 text-indigo-600"></i>
                                 <span>Tabela</span>
                             </button>
-                            <button class="add-element-btn px-3 py-2 bg-white border rounded-lg flex flex-col items-center" data-element="list">
+                            <button class="element-btn" data-element="list">
                                 <i class="fas fa-list-ul text-xl mb-1 text-indigo-600"></i>
                                 <span>Lista</span>
                             </button>
                         </div>
                     </div>
-                </div>
+                </main>
             </div>
         </div>
     </div>
-<nav class="bg-indigo-600 text-white py-4 px-4">
-    <div class="container mx-auto flex justify-between items-center">
-        <h1 class="text-xl font-bold">MONTYPDF©</h1>
-        <div class="space-x-4">
-            <a href="login.html" class="hover:text-indigo-200 transition">Login</a>
-            <a href="register.html" class="hover:text-indigo-200 transition">Registrar</a>
+
+    <!-- Rodapé -->
+    <footer class="bg-gray-800 text-white py-6 mt-8">
+        <div class="container mx-auto px-4 text-center">
+            <p>© 2023 MONTYPDF. Todos os direitos reservados.</p>
+            <div class="mt-2">
+                <a href="#" class="text-gray-400 hover:text-white mx-2">Termos de Serviço</a>
+                <a href="#" class="text-gray-400 hover:text-white mx-2">Política de Privacidade</a>
+                <a href="#" class="text-gray-400 hover:text-white mx-2">Contato</a>
+            </div>
         </div>
-    </div>
-</nav>
+    </footer>
 </body>
 </html>
