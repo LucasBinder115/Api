@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Redirecionando...</title>
+</head>
+<body>
+    <script>
+        // Pega o token da URL
+        const hash = window.location.hash.substring(1);
+        const params = new URLSearchParams(hash);
+        const accessToken = params.get('access_token');
+
+        if (accessToken) {
+            // Envia para o backend
+            fetch('http://localhost:8080/api/auth/google', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ token: accessToken })
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Salva JWT no localStorage
+                localStorage.setItem('token', data.jwt);
+                window.location.href = '/dashboard.html';
+            })
+            .catch(err => {
+                alert('Erro ao fazer login');
+                console.error(err);
+            });
+        } else {
+            alert('Token não encontrado');
+        }
+    </script>
+</body>
+</html>

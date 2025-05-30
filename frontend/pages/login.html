@@ -4,51 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - MontPython</title>
+    <link rel="stylesheet" href="../css/login.css">
+
+    <script src="../js/login.js"></script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .login-card {
-            max-width: 400px;
-            margin: 0 auto;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-        .form-input {
-            transition: all 0.3s ease;
-        }
-        .form-input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-        }
-        .btn-primary {
-            background-color: #667eea;
-            transition: all 0.3s ease;
-        }
-        .btn-primary:hover {
-            background-color: #5a6fd1;
-            transform: translateY(-2px);
-        }
-        .error-message {
-            display: none;
-            color: #ef4444;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
-        .social-btn {
-            transition: all 0.3s ease;
-        }
-        .social-btn:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
-        }
-    </style>
+        
 </head>
 <body class="gradient-bg min-h-screen flex items-center justify-center p-4">
     <div class="login-card bg-white p-8 w-full">
@@ -88,6 +53,19 @@
             </button>
         </form>
 
+        <!-- Login por OTP -->
+<div class="my-4 text-center text-gray-700">
+    <p>Ou use seu e-mail para login por código</p>
+    <input type="email" id="otpEmail" class="mt-2 p-2 border rounded w-full" placeholder="Digite seu e-mail">
+    <button id="sendOtpBtn" class="mt-2 bg-indigo-600 text-white py-2 px-4 rounded">Enviar código</button>
+</div>
+
+<div class="my-4 text-center text-gray-700 hidden" id="otpVerification">
+    <input type="text" id="otpCode" class="mt-2 p-2 border rounded w-full" placeholder="Código recebido">
+    <button id="verifyOtpBtn" class="mt-2 bg-green-600 text-white py-2 px-4 rounded">Verificar</button>
+</div>
+
+
         <!-- Divisor -->
         <div class="relative my-6">
             <div class="absolute inset-0 flex items-center">
@@ -97,70 +75,20 @@
                 <span class="px-2 bg-white text-gray-500">Ou continue com</span>
             </div>
         </div>
-
-        <!-- Login Social -->
-        <div class="grid grid-cols-2 gap-3 mb-6">
-            <a href="#" class="social-btn bg-red-600 text-white py-2 px-4 rounded-lg flex items-center justify-center">
-                <i class="fab fa-google mr-2"></i> Google
-            </a>
-            <a href="#" class="social-btn bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center justify-center">
-                <i class="fab fa-facebook-f mr-2"></i> Facebook
-            </a>
-        </div>
+     <!-- Login Social -->
+<div class="grid grid-cols-2 gap-3 mb-6">
+    <button id="google-login" type="button" class="social-btn bg-red-600 text-white py-2 px-4 rounded-lg flex items-center justify-center">
+        <i class="fab fa-google mr-2"></i> Google
+    </button>
+    <button id="facebook-login" type="button" class="social-btn bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center justify-center">
+        <i class="fab fa-facebook-f mr-2"></i> Facebook
+    </button>
+</div>
 
         <!-- Link para Registro -->
         <div class="text-center text-sm text-gray-600">
             Não tem uma conta? <a href="register.html" class="text-indigo-600 font-medium hover:underline">Cadastre-se</a>
         </div>
     </div>
-
-    <!-- JavaScript -->
-    <script>
-        $(document).ready(function() {
-            // Validação do formulário
-            $('#loginForm').submit(function(e) {
-                e.preventDefault();
-                
-                // Resetar mensagens de erro
-                $('.error-message').hide();
-                let isValid = true;
-                
-                // Validação de e-mail
-                const email = $('#email').val();
-                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                    $('#emailError').show();
-                    isValid = false;
-                }
-                
-                // Validação de senha
-                const password = $('#password').val();
-                if (!password || password.length < 6) {
-                    $('#passwordError').show();
-                    isValid = false;
-                }
-                
-                // Se válido, pode enviar o formulário
-                if (isValid) {
-                    // Simulação de login - substituir por chamada AJAX real
-                    console.log('Login submitted:', {
-                        email: email,
-                        password: password,
-                        remember: $('#remember').is(':checked')
-                    });
-                    
-                    // Redirecionamento temporário - substituir por lógica real
-                    alert('Login bem-sucedido! Redirecionando...');
-                    window.location.href = 'dashboard.html';
-                }
-            });
-            
-            // Efeitos visuais
-            $('.form-input').focus(function() {
-                $(this).addClass('border-indigo-500');
-            }).blur(function() {
-                $(this).removeClass('border-indigo-500');
-            });
-        });
-    </script>
 </body>
 </html>
