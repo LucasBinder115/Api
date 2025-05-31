@@ -1,11 +1,27 @@
 // Variáveis globais
 let questions = [];
 let currentQuestionId = 0;
+let genAI; // Instância do GenerativeAI
 
 // Inicialização
-$(document).ready(function() {
+$(document).ready(async function() {
+    await initializeGenAI();
     initializeEventListeners();
 });
+
+// Inicializa o Generative AI
+async function initializeGenAI() {
+    try {
+        // Carrega a biblioteca do Google Generative AI
+        const { GoogleGenerativeAI } = await import('https://esm.run/@google/generative-ai');
+        
+        // Inicializa com sua API Key
+        genAI = new GoogleGenerativeAI('AIzaSyDe-AA1In-JFixZxE40-IgEz1G-2j1cVyA');
+    } catch (error) {
+        console.error('Erro ao carregar a biblioteca Generative AI:', error);
+        alert('Erro ao carregar o serviço de IA. Algumas funcionalidades podem não estar disponíveis.');
+    }
+}
 
 function initializeEventListeners() {
     // Adicionar questão
@@ -96,6 +112,76 @@ function addQuestion(type, content = {}) {
     });
 }
 
+// ... [mantenha todas as funções get*Html e setupQuestionEventListeners como estão] ...
+
+// Gerar questões com Generative AI
+async function generateQuestionsWithAI(topic, level, quantity) {
+    $('#generate-with-ai').html('<i class="fas fa-spinner fa-spin mr-1"></i> Gerando...');
+    
+    try {
+        if (!genAI) {
+            throw new Error('Serviço de IA não inicializado');
+        }
+        
+        // Obtém o modelo generativo
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        
+        // Prompt estruturado para gerar questões
+        const prompt = `
+        Você é um especialista em criação de avaliações educacionais. 
+        Gere ${quantity} questões sobre "${topic}" para o nível ${level}.
+        
+        Requisitos:
+        - Inclua diferentes tipos: múltipla escolha, verdadeiro/falso, resposta curta e dissertativa
+        - Para múltipla escolha, forneça 4 opções e indique a correta
+        - Use o seguinte formato JSON para cada questão:
+          {
+            "type": "tipo da questão",
+            "question": "texto da questão",
+            "options": [ // apenas para múltipla escolha
+              {"text": "opção 1", "correct": true/false},
+              ...
+            ],
+            "answer": "resposta" // para outros tipos
+          }
+          
+        Retorne APENAS o JSON com um array de questões, sem comentários ou markdown.
+        `;
+        
+        // Gera o conteúdo
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const generatedText = response.text();
+        
+        // Parse da resposta
+        const jsonResponse = parseAIResponse(generatedText);
+        
+        // Adiciona as questões ao editor
+        if(jsonResponse.questions && jsonResponse.questions.length > 0) {
+            jsonResponse.questions.forEach(q => {
+                addQuestion(q.type, q);
+            });
+        } else if(Array.isArray(jsonResponse)) {
+            // Caso a resposta seja diretamente o array de questões
+            jsonResponse.forEach(q => {
+                addQuestion(q.type, q);
+            });
+        } else {
+            throw new Error('Formato de resposta da IA não reconhecido');
+        }
+        
+    } catch (error) {
+        console.error('Erro ao gerar questões com IA:', error);
+        alert(`Erro: ${error.message}`);
+        
+        // Fallback para dados simulados em caso de erro
+        if (confirm('Falha ao conectar com a IA. Deseja usar questões de exemplo?')) {
+            generateSampleQuestions(topic, quantity);
+        }
+    } finally {
+        $('#generate-with-ai').html('<i class="fas fa-robot mr-1"></i> Gerar com IA');
+    }
+}
 function getMultipleChoiceHtml(id, questionNumber, content) {
     const optionsHtml = content.options ? 
         content.options.map((opt, i) => `
@@ -367,25 +453,9 @@ async function generateQuestionsWithAI(topic, level, quantity) {
             gapi.load('client', { callback: resolve, onerror: reject });
         });
         
-        // Inicializa o cliente com sua API Key
-        await gapi.client.init({
-            apiKey: 'AIzaSyDe-AA1In-JFixZxE40-IgEz1G-2j1cVyA',
-            discoveryDocs: ['https://generativelanguage.googleapis.com/$discovery/rest?version=v1beta'],
-        });
         
         // Prompt para o Gemini
-        const prompt = `Gere ${quantity} questões sobre ${topic} para o nível ${level}. 
-        Inclua questões de múltipla escolha, verdadeiro/falso, resposta curta e dissertativas. 
-        Retorne em formato JSON com: type, question, options (para múltipla escolha), answer (para outras).`;
-        
-        const response = await gapi.client.generativelanguage.models.generateContent({
-            model: 'models/gemini-pro',
-            contents: [{
-                parts: [{
-                    text: prompt
-                }]
-            }]
-        });
+    
         
         // Processa a resposta
         const generatedText = response.result.candidates[0].content.parts[0].text;

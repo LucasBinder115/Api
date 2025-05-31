@@ -5,6 +5,7 @@ import datetime
 import sqlite3
 from db import get_db_connection
 from models import create_tables
+import random
 
 app = Flask(__name__)
 CORS(app)
@@ -59,13 +60,14 @@ def login():
 def send_otp():
     data = request.json
     email = data['email']
-    otp_code = '123456'  # Aqui você pode gerar aleatoriamente
+    otp_code = str(random.randint(100000, 999999))
+
 
     conn = get_db_connection()
     user = conn.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
 
     if not user:
-        conn.execute("INSERT INTO users (email, otp) VALUES (?, ?)", (email, otp_code))
+        conn.execute("INSERT INTO users (email, otp, role) VALUES (?, ?, 'user')", (email, otp_code))
     else:
         conn.execute("UPDATE users SET otp=? WHERE email=?", (otp_code, email))
     conn.commit()
@@ -93,8 +95,7 @@ def verify_otp():
         return jsonify({'jwt': token})
     return jsonify({'error': 'Código inválido'}), 400
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# Login via Google
 @app.route('/api/auth/google', methods=['POST'])
 def google_login():
     data = request.json
@@ -109,7 +110,7 @@ def google_login():
 
     if not user:
         # Cadastra se não existir
-        conn.execute("INSERT INTO users (email, password, role) VALUES (?, NULL, 'user')", (email,))
+        conn.execute("INSERT INTO users (email, password, role) VALUES (?, ?, 'user')", (email, '',))
         conn.commit()
         user = conn.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
 
@@ -122,3 +123,7 @@ def google_login():
     }, app.config['SECRET_KEY'], algorithm='HS256')
 
     return jsonify({'jwt': token})
+
+# Inicia o servidor
+if __name__ == '__main__':
+    app.run(debug=True)

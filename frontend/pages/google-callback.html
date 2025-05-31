@@ -1,38 +1,51 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Redirecionando...</title>
-</head>
+<html>
+<head><title>Conectando com Google...</title></head>
 <body>
+    <h3>Autenticando com Google...</h3>
     <script>
-        // Pega o token da URL
-        const hash = window.location.hash.substring(1);
-        const params = new URLSearchParams(hash);
-        const accessToken = params.get('access_token');
+        (async () => {
+            const params = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = params.get('access_token');
 
-        if (accessToken) {
-            // Envia para o backend
-            fetch('http://localhost:8080/api/auth/google', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ token: accessToken })
-            })
-            .then(res => res.json())
-            .then(data => {
-                // Salva JWT no localStorage
-                localStorage.setItem('token', data.jwt);
+            if (!accessToken) {
+                alert('Erro: token não encontrado.');
+                return;
+            }
+
+            // Evita redirecionamento infinito
+            if (localStorage.getItem('googleLoggedIn') === 'true') {
                 window.location.href = '/dashboard.html';
-            })
-            .catch(err => {
-                alert('Erro ao fazer login');
+                return;
+            }
+
+            try {
+                const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                }).then(res => res.json());
+
+                const backendRes = await fetch('http://localhost:8080/api/auth/google', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userInfo.email, name: userInfo.name })
+                });
+
+                const data = await backendRes.json();
+
+                if (data.jwt) {
+                    localStorage.setItem('token', data.jwt);
+                    localStorage.setItem('googleLoggedIn', 'true');
+                    window.location.href = '/dashboard.html';
+                } else {
+                    alert('Erro ao logar via Google');
+                }
+            } catch (err) {
                 console.error(err);
-            });
-        } else {
-            alert('Token não encontrado');
-        }
+                alert('Erro de rede ou token inválido.');
+            }
+        })();
     </script>
 </body>
 </html>
