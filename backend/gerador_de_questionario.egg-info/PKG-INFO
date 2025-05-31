@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: gerador_de_questionario
-Version: 0.1
-Requires-Dist: flask
-Requires-Dist: google-generativeai
-Requires-Dist: reportlab
-Requires-Dist: sqlite3
-Dynamic: requires-dist

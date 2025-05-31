@@ -1,201 +1,489 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const { jsPDF } = window.jspdf;
+// Variáveis globais
+let questions = [];
+let currentQuestionId = 0;
 
-    let docConfig = {
-        template: 'simple',
-        orientation: 'portrait',
-        size: 'a4',
-        margins: 'normal',
-        header: true,
-        footer: true,
-        pageNumbers: false
-    };
+// Inicialização
+$(document).ready(function() {
+    initializeEventListeners();
+});
 
-    const $pdfPreview = $('#pdf-preview');
-    const $pdfHeader = $('#pdf-header');
-    const $pdfContent = $('#pdf-content');
-    const $pdfFooter = $('#pdf-footer');
+function initializeEventListeners() {
+    // Adicionar questão
+    $('.add-question-btn').click(function() {
+        const type = $(this).data('type');
+        addQuestion(type);
+    });
+    
+    // Limpar tudo
+    $('#clear-all').click(function() {
+        if(confirm('Tem certeza que deseja limpar todas as questões?')) {
+            clearAllQuestions();
+        }
+    });
+    
+    // Gerar com IA
+    $('#generate-with-ai').click(function() {
+        $('#ai-modal').removeClass('hidden');
+    });
+    
+    $('#cancel-ai').click(function() {
+        $('#ai-modal').addClass('hidden');
+    });
+    
+    $('#confirm-ai').click(async function() {
+        const topic = $('#ai-topic').val();
+        const level = $('#ai-level').val();
+        const quantity = parseInt($('#ai-quantity').val());
+        
+        if(!topic) {
+            alert('Por favor, insira um tema/assunto');
+            return;
+        }
+        
+        await generateQuestionsWithAI(topic, level, quantity);
+        $('#ai-modal').addClass('hidden');
+    });
+    
+    // Exportar PDF
+    $('#export-pdf').click(function() {
+        exportToPDF();
+    });
+    
+    // Exportar Gabarito
+    $('#export-answer-key').click(function() {
+        exportAnswerKey();
+    });
+}
 
-    // Inicialização
-    $('.template-btn[data-template="simple"]').click();
+function clearAllQuestions() {
+    questions = [];
+    $('#questions-container').empty();
+    currentQuestionId = 0;
+}
 
-    // Aplicar template visual
-    function applyTemplate() {
-        const styles = {
-            simple: { header: 'text-gray-900', text: 'text-gray-700', bg: '#ffffff' },
-            professional: { header: 'text-gray-800', text: 'text-gray-600', bg: '#ffffff' },
-            academic: { header: 'text-blue-800', text: 'text-gray-700', bg: '#f8fafc' },
-            creative: { header: 'text-purple-600', text: 'text-gray-700', bg: '#faf5ff' }
-        };
-
-        const { header, text, bg } = styles[docConfig.template];
-        $pdfPreview.css('background-color', bg);
-        $pdfHeader.find('h1').attr('class', `text-3xl font-bold mb-2 ${header}`);
-        $pdfHeader.find('p').attr('class', text);
-        $pdfContent.find('h2').attr('class', `text-xl font-bold mb-3 border-b pb-2 ${header}`);
-        $pdfContent.find('p').attr('class', `mb-4 ${text}`);
+// Função para adicionar uma nova questão
+function addQuestion(type, content = {}) {
+    const id = currentQuestionId++;
+    const questionNumber = questions.length + 1;
+    let questionHtml = '';
+    
+    switch(type) {
+        case 'multiple-choice':
+            questionHtml = getMultipleChoiceHtml(id, questionNumber, content);
+            break;
+        case 'true-false':
+            questionHtml = getTrueFalseHtml(id, questionNumber, content);
+            break;
+        case 'short-answer':
+            questionHtml = getShortAnswerHtml(id, questionNumber, content);
+            break;
+        case 'essay':
+            questionHtml = getEssayHtml(id, questionNumber, content);
+            break;
+        default:
+            console.error('Tipo de questão não suportado:', type);
+            return;
     }
+    
+    $('#questions-container').append(questionHtml);
+    setupQuestionEventListeners(id, type);
+    
+    // Adicionar à lista de questões
+    questions.push({
+        id: id,
+        type: type,
+        content: content
+    });
+}
 
-    // Adicionar elementos ao conteúdo
-    function addElement(type) {
-        const elements = {
-            text: `<div class="mb-6" contenteditable="true"><p>Novo parágrafo de texto. Comece a digitar aqui...</p></div>`,
-            image: `<div class="mb-6"><div class="border-2 border-dashed border-gray-300 p-4 text-center"><p class="text-gray-500 mb-2">Clique para adicionar uma imagem</p><button class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-lg"><i class="fas fa-upload mr-2"></i>Enviar Imagem</button></div></div>`,
-            table: `<div class="mb-6" contenteditable="true"><table class="w-full border-collapse"><thead><tr class="bg-gray-100"><th class="border p-2 text-left">Cabeçalho 1</th><th class="border p-2 text-left">Cabeçalho 2</th></tr></thead><tbody><tr><td class="border p-2">Dado 1</td><td class="border p-2">Dado 2</td></tr><tr class="bg-gray-50"><td class="border p-2">Dado 3</td><td class="border p-2">Dado 4</td></tr></tbody></table></div>`,
-            list: `<div class="mb-6" contenteditable="true"><ul class="list-disc pl-5"><li class="mb-2">Item de lista 1</li><li class="mb-2">Item de lista 2</li><li>Item de lista 3</li></ul></div>`
-        };
-        $pdfContent.append(elements[type] || '');
-    }
+function getMultipleChoiceHtml(id, questionNumber, content) {
+    const optionsHtml = content.options ? 
+        content.options.map((opt, i) => `
+            <div class="flex items-center option">
+                <input type="radio" name="q${id}" class="mr-2 correct-answer" ${opt.correct ? 'checked' : ''}>
+                <input type="text" class="flex-1 border rounded p-2 option-text" value="${opt.text || ''}" placeholder="Opção ${i+1}">
+                <button class="delete-option ml-2 text-red-500"><i class="fas fa-times"></i></button>
+            </div>
+        `).join('') : `
+            <div class="flex items-center option">
+                <input type="radio" name="q${id}" class="mr-2 correct-answer">
+                <input type="text" class="flex-1 border rounded p-2 option-text" placeholder="Opção 1">
+                <button class="delete-option ml-2 text-red-500"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="flex items-center option">
+                <input type="radio" name="q${id}" class="mr-2 correct-answer">
+                <input type="text" class="flex-1 border rounded p-2 option-text" placeholder="Opção 2">
+                <button class="delete-option ml-2 text-red-500"><i class="fas fa-times"></i></button>
+            </div>
+        `;
 
-    function generatePDF() {
-        $('#export-pdf').html('<i class="fas fa-spinner fa-spin mr-2"></i> Gerando...');
-        html2canvas(document.getElementById('pdf-preview')).then(canvas => {
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF({ orientation: docConfig.orientation, unit: 'mm', format: docConfig.size });
+    return `
+        <div class="question-card border rounded-lg p-4" data-id="${id}" data-type="multiple-choice">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-medium">Questão ${questionNumber} (Múltipla Escolha)</span>
+                <button class="delete-question text-red-500"><i class="fas fa-times"></i></button>
+            </div>
+            <textarea class="w-full border rounded p-2 mb-3 question-text" placeholder="Enunciado da questão">${content.question || ''}</textarea>
+            <div class="options-container space-y-2 mb-3">
+                ${optionsHtml}
+            </div>
+            <button class="add-option text-sm text-indigo-600"><i class="fas fa-plus mr-1"></i> Adicionar Opção</button>
+        </div>
+    `;
+}
 
-            const imgWidth = pdf.internal.pageSize.getWidth();
-            const imgHeight = canvas.height * imgWidth / canvas.width;
-            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-            pdf.save('documento-gerado.pdf');
+function getTrueFalseHtml(id, questionNumber, content) {
+    return `
+        <div class="question-card border rounded-lg p-4" data-id="${id}" data-type="true-false">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-medium">Questão ${questionNumber} (Verdadeiro/Falso)</span>
+                <button class="delete-question text-red-500"><i class="fas fa-times"></i></button>
+            </div>
+            <textarea class="w-full border rounded p-2 mb-3 question-text" placeholder="Enunciado da questão">${content.question || ''}</textarea>
+            <div class="flex items-center space-x-4">
+                <label class="flex items-center">
+                    <input type="radio" name="q${id}-tf" value="true" class="mr-2" ${content.answer === 'true' ? 'checked' : ''}> Verdadeiro
+                </label>
+                <label class="flex items-center">
+                    <input type="radio" name="q${id}-tf" value="false" class="mr-2" ${content.answer === 'false' ? 'checked' : ''}> Falso
+                </label>
+            </div>
+        </div>
+    `;
+}
 
-            $('#export-pdf').html('<i class="fas fa-file-pdf mr-2"></i> PDF');
+function getShortAnswerHtml(id, questionNumber, content) {
+    return `
+        <div class="question-card border rounded-lg p-4" data-id="${id}" data-type="short-answer">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-medium">Questão ${questionNumber} (Resposta Curta)</span>
+                <button class="delete-question text-red-500"><i class="fas fa-times"></i></button>
+            </div>
+            <textarea class="w-full border rounded p-2 mb-3 question-text" placeholder="Enunciado da questão">${content.question || ''}</textarea>
+            <div class="flex items-center">
+                <span class="mr-2">Resposta:</span>
+                <input type="text" class="flex-1 border rounded p-2 answer-text" value="${content.answer || ''}">
+            </div>
+        </div>
+    `;
+}
+
+function getEssayHtml(id, questionNumber, content) {
+    return `
+        <div class="question-card border rounded-lg p-4" data-id="${id}" data-type="essay">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-medium">Questão ${questionNumber} (Dissertativa)</span>
+                <button class="delete-question text-red-500"><i class="fas fa-times"></i></button>
+            </div>
+            <textarea class="w-full border rounded p-2 mb-3 question-text" placeholder="Enunciado da questão">${content.question || ''}</textarea>
+            <div class="bg-gray-100 p-3 rounded">
+                <p class="text-gray-500">Espaço para resposta (será ajustado no PDF)</p>
+            </div>
+        </div>
+    `;
+}
+
+function setupQuestionEventListeners(id, type) {
+    // Configurar eventos para a nova questão
+    $(`#questions-container .question-card[data-id="${id}"] .delete-question`).click(function() {
+        $(this).closest('.question-card').remove();
+        questions = questions.filter(q => q.id !== id);
+        updateQuestionNumbers();
+    });
+    
+    if(type === 'multiple-choice') {
+        $(`#questions-container .question-card[data-id="${id}"] .add-option`).click(function() {
+            addOptionToQuestion(id);
+        });
+        
+        $(`#questions-container .question-card[data-id="${id}"] .delete-option`).click(function() {
+            $(this).closest('.option').remove();
         });
     }
+}
 
-    async function saveDocument() {
-        const token = localStorage.getItem('token');
-        const content = $pdfContent.html();
-        try {
-            const response = await fetch('/api/save-document', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ content, config: docConfig })
+function addOptionToQuestion(questionId) {
+    const optionsContainer = $(`#questions-container .question-card[data-id="${questionId}"] .options-container`);
+    const optionCount = optionsContainer.find('.option').length + 1;
+    
+    optionsContainer.append(`
+        <div class="flex items-center option">
+            <input type="radio" name="q${questionId}" class="mr-2 correct-answer">
+            <input type="text" class="flex-1 border rounded p-2 option-text" placeholder="Opção ${optionCount}">
+            <button class="delete-option ml-2 text-red-500"><i class="fas fa-times"></i></button>
+        </div>
+    `);
+    
+    optionsContainer.find('.delete-option').last().click(function() {
+        $(this).closest('.option').remove();
+    });
+}
+
+// Atualizar números das questões
+function updateQuestionNumbers() {
+    $('#questions-container .question-card').each(function(index) {
+        const type = $(this).data('type');
+        let typeText = '';
+        
+        switch(type) {
+            case 'multiple-choice': typeText = 'Múltipla Escolha'; break;
+            case 'true-false': typeText = 'Verdadeiro/Falso'; break;
+            case 'short-answer': typeText = 'Resposta Curta'; break;
+            case 'essay': typeText = 'Dissertativa'; break;
+        }
+        
+        $(this).find('span.font-medium').text(`Questão ${index + 1} (${typeText})`);
+    });
+}
+
+// Exportar para PDF
+function exportToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        orientation: $('#orientation').val(),
+        unit: 'mm',
+        format: $('#page-size').val()
+    });
+    
+    const title = $('#exam-title').val() || 'Prova Sem Título';
+    const subject = $('#exam-subject').val() || '';
+    const grade = $('#exam-grade').val() || '';
+    
+    // Cabeçalho
+    doc.setFontSize(16);
+    doc.text(title, 105, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.text(`Matéria: ${subject}`, 20, 30);
+    doc.text(`Turma: ${grade}`, 20, 36);
+    
+    let yPosition = 50;
+    
+    // Questões
+    $('#questions-container .question-card').each(function(index) {
+        const type = $(this).data('type');
+        const questionText = $(this).find('.question-text').val();
+        
+        if(yPosition > 250) { // Nova página se estiver perto do fim
+            doc.addPage();
+            yPosition = 20;
+        }
+        
+        doc.setFontSize(12);
+        doc.text(`${index + 1}. ${questionText}`, 20, yPosition);
+        yPosition += 10;
+        
+        if(type === 'multiple-choice') {
+            $(this).find('.option').each(function(i) {
+                const optionText = $(this).find('.option-text').val();
+                doc.text(`   ${String.fromCharCode(97 + i)}) ${optionText}`, 20, yPosition);
+                yPosition += 7;
             });
-            if (!response.ok) throw new Error('Falha ao salvar documento');
-            alert('Documento salvo com sucesso!');
-        } catch (err) {
-            console.error('Erro:', err);
-            alert('Erro ao salvar documento! Verifique se você está logado.');
+            yPosition += 5;
+        } 
+        else if(type === 'true-false') {
+            yPosition += 5;
         }
-    }
-
-    // Conversão de arquivos
-    const fileInput = document.getElementById('file-input');
-    const fileInfo = document.getElementById('file-info');
-    const outputFormat = document.getElementById('output-format');
-    const convertBtn = document.getElementById('convert-btn');
-
-    fileInput?.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            fileInfo.textContent = `Arquivo selecionado: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
-            fileInfo.classList.remove('hidden');
+        else if(type === 'short-answer') {
+            doc.text('______________________________________________________', 20, yPosition);
+            yPosition += 10;
         }
+        else if(type === 'essay') {
+            doc.text('________________________________________________________________________', 20, yPosition);
+            doc.text('________________________________________________________________________', 20, yPosition + 5);
+            doc.text('________________________________________________________________________', 20, yPosition + 10);
+            doc.text('________________________________________________________________________', 20, yPosition + 15);
+            yPosition += 25;
+        }
+        
+        yPosition += 10; // Espaço entre questões
     });
+    
+    doc.save(`${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`);
+}
 
-    convertBtn?.addEventListener('click', async () => {
-        if (!fileInput.files.length) return showConversionStatus('Por favor, selecione um arquivo primeiro.', 'error');
-
-        const file = fileInput.files[0];
-        try {
-            showConversionStatus('Convertendo arquivo...', 'info');
-            const blob = await convertToPdf(file); // Exemplo apenas com PDF por ora
-            downloadFile(blob, `converted.pdf`);
-            showConversionStatus('Conversão concluída com sucesso!', 'success');
-        } catch (error) {
-            console.error('Erro na conversão:', error);
-            showConversionStatus('Erro ao converter arquivo: ' + error.message, 'error');
-        }
+// Exportar gabarito
+function exportAnswerKey() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        orientation: $('#orientation').val(),
+        unit: 'mm',
+        format: $('#page-size').val()
     });
-
-    function showConversionStatus(message, type) {
-        const statusClass = `conversion-status ${type}`;
-        let statusElement = document.querySelector('.conversion-status');
-
-        if (!statusElement) {
-            statusElement = document.createElement('div');
-            statusElement.className = statusClass;
-            convertBtn.parentNode.insertBefore(statusElement, convertBtn.nextSibling);
+    
+    const title = $('#exam-title').val() || 'Prova Sem Título';
+    
+    doc.setFontSize(16);
+    doc.text(`Gabarito - ${title}`, 105, 20, { align: 'center' });
+    
+    let yPosition = 30;
+    
+    // Gabarito
+    $('#questions-container .question-card').each(function(index) {
+        const type = $(this).data('type');
+        
+        if(yPosition > 250) {
+            doc.addPage();
+            yPosition = 20;
         }
+        
+        doc.setFontSize(12);
+        doc.text(`${index + 1}.`, 20, yPosition);
+        
+        if(type === 'multiple-choice') {
+            const correctIndex = $(this).find('.correct-answer:checked').index('.correct-answer');
+            doc.text(`Resposta: ${String.fromCharCode(97 + correctIndex)}`, 30, yPosition);
+        } 
+        else if(type === 'true-false') {
+            const answer = $(this).find('input[type="radio"]:checked').val();
+            doc.text(`Resposta: ${answer === 'true' ? 'Verdadeiro' : 'Falso'}`, 30, yPosition);
+        }
+        else if(type === 'short-answer') {
+            const answer = $(this).find('.answer-text').val();
+            doc.text(`Resposta: ${answer}`, 30, yPosition);
+        }
+        else if(type === 'essay') {
+            doc.text(`Resposta: [Dissertativa - avaliar conforme critérios]`, 30, yPosition);
+        }
+        
+        yPosition += 10;
+    });
+    
+    doc.save(`gabarito_${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`);
+}
 
-        statusElement.className = statusClass;
-        statusElement.textContent = message;
-    }
-
-    async function convertToPdf(file) {
-        if (file.name.endsWith('.docx')) {
-            const result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
-            const doc = new jsPDF();
-            doc.text(result.value, 10, 10);
-            return doc.output('blob');
+// Gerar questões com IA (Gemini API)
+async function generateQuestionsWithAI(topic, level, quantity) {
+    $('#generate-with-ai').html('<i class="fas fa-spinner fa-spin mr-1"></i> Gerando...');
+    
+    try {
+        // Verifica se a API do Google está carregada
+        if (!window.gapi) {
+            throw new Error('API do Google não carregada');
+        }
+        
+        // Carrega o cliente da API
+        await new Promise((resolve, reject) => {
+            gapi.load('client', { callback: resolve, onerror: reject });
+        });
+        
+        // Inicializa o cliente com sua API Key
+        await gapi.client.init({
+            apiKey: 'AIzaSyDe-AA1In-JFixZxE40-IgEz1G-2j1cVyA',
+            discoveryDocs: ['https://generativelanguage.googleapis.com/$discovery/rest?version=v1beta'],
+        });
+        
+        // Prompt para o Gemini
+        const prompt = `Gere ${quantity} questões sobre ${topic} para o nível ${level}. 
+        Inclua questões de múltipla escolha, verdadeiro/falso, resposta curta e dissertativas. 
+        Retorne em formato JSON com: type, question, options (para múltipla escolha), answer (para outras).`;
+        
+        const response = await gapi.client.generativelanguage.models.generateContent({
+            model: 'models/gemini-pro',
+            contents: [{
+                parts: [{
+                    text: prompt
+                }]
+            }]
+        });
+        
+        // Processa a resposta
+        const generatedText = response.result.candidates[0].content.parts[0].text;
+        const jsonResponse = parseAIResponse(generatedText);
+        
+        // Adiciona as questões ao editor
+        if(jsonResponse.questions && jsonResponse.questions.length > 0) {
+            jsonResponse.questions.forEach(q => {
+                addQuestion(q.type, q);
+            });
         } else {
-            return createPdfFromText(await file.text());
+            throw new Error('A IA não retornou questões no formato esperado');
+        }
+        
+    } catch (error) {
+        console.error('Erro ao gerar questões com IA:', error);
+        alert(`Erro: ${error.message}`);
+        
+        // Fallback para dados simulados em caso de erro
+        if (confirm('Falha ao conectar com a IA. Deseja usar questões de exemplo?')) {
+            generateSampleQuestions(topic, quantity);
+        }
+    } finally {
+        $('#generate-with-ai').html('<i class="fas fa-robot mr-1"></i> Gerar com IA');
+    }
+}
+
+function parseAIResponse(generatedText) {
+    try {
+        // Tenta extrair o JSON se estiver em um bloco de código
+        const jsonMatch = generatedText.match(/```json\n([\s\S]*?)\n```/);
+        if(jsonMatch) {
+            return JSON.parse(jsonMatch[1]);
+        }
+        
+        // Tenta encontrar JSON no texto
+        const jsonStart = generatedText.indexOf('{');
+        const jsonEnd = generatedText.lastIndexOf('}') + 1;
+        if(jsonStart !== -1 && jsonEnd !== -1) {
+            return JSON.parse(generatedText.substring(jsonStart, jsonEnd));
+        }
+        
+        // Última tentativa - parse direto
+        return JSON.parse(generatedText);
+    } catch(e) {
+        console.error('Erro ao parsear resposta:', e);
+        throw new Error('Não foi possível interpretar a resposta da IA');
+    }
+}
+
+function generateSampleQuestions(topic, quantity) {
+    const sampleQuestions = [];
+    
+    for(let i = 0; i < quantity; i++) {
+        const type = ['multiple-choice', 'true-false', 'short-answer', 'essay'][i % 4];
+        
+        switch(type) {
+            case 'multiple-choice':
+                sampleQuestions.push({
+                    type: type,
+                    question: `Sobre ${topic}, qual das alternativas abaixo está correta?`,
+                    options: [
+                        { text: `Alternativa A sobre ${topic}`, correct: i % 4 === 0 },
+                        { text: `Alternativa B sobre ${topic}`, correct: i % 4 === 1 },
+                        { text: `Alternativa C sobre ${topic}`, correct: i % 4 === 2 },
+                        { text: `Alternativa D sobre ${topic}`, correct: i % 4 === 3 }
+                    ]
+                });
+                break;
+                
+            case 'true-false':
+                sampleQuestions.push({
+                    type: type,
+                    question: `Verdadeiro ou Falso: Esta é uma afirmação verdadeira sobre ${topic}.`,
+                    answer: i % 2 === 0 ? 'true' : 'false'
+                });
+                break;
+                
+            case 'short-answer':
+                sampleQuestions.push({
+                    type: type,
+                    question: `Explique brevemente sobre ${topic}.`,
+                    answer: `Resposta modelo sobre ${topic}`
+                });
+                break;
+                
+            case 'essay':
+                sampleQuestions.push({
+                    type: type,
+                    question: `Disserte sobre o tema "${topic}".`,
+                    answer: ''
+                });
+                break;
         }
     }
-
-    async function createPdfFromText(text) {
-        const doc = new jsPDF();
-        doc.text(text, 10, 10);
-        return doc.output('blob');
-    }
-
-    function downloadFile(blob, filename) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-    }
-
-    // Event listeners
-    $('.template-btn').click(function () {
-        $('.template-btn').removeClass('border-indigo-500 bg-indigo-50');
-        $(this).addClass('border-indigo-500 bg-indigo-50');
-        docConfig.template = $(this).data('template');
-        applyTemplate();
+    
+    // Adicionar questões ao editor
+    sampleQuestions.forEach(q => {
+        addQuestion(q.type, q);
     });
-
-    $('.orientation-btn').click(function () {
-        $('.orientation-btn').removeClass('bg-indigo-600 text-white').addClass('border-gray-300');
-        $(this).addClass('bg-indigo-600 text-white').removeClass('border-gray-300');
-        docConfig.orientation = $(this).data('orientation');
-    });
-
-    $('#margin-select').change(function () {
-        docConfig.margins = $(this).val();
-    });
-
-    $('#size-select').change(function () {
-        docConfig.size = $(this).val();
-    });
-
-    $('#header-toggle').change(function () {
-        docConfig.header = $(this).is(':checked');
-        $pdfHeader.toggle(docConfig.header);
-    });
-
-    $('#footer-toggle').change(function () {
-        docConfig.footer = $(this).is(':checked');
-        $pdfFooter.toggle(docConfig.footer);
-    });
-
-    $('#pagenum-toggle').change(function () {
-        docConfig.pageNumbers = $(this).is(':checked');
-    });
-
-    $('.add-element-btn').click(function () {
-        addElement($(this).data('element'));
-    });
-
-    $('#export-pdf').click(generatePDF);
-    $('#save-btn').click(saveDocument);
-    $('#clear-btn').click(() => {
-        $pdfContent.html('<div class="mb-6" contenteditable="true"><h2 class="text-xl font-bold mb-3 border-b pb-2">Nova Seção</h2><p>Comece a digitar seu conteúdo aqui...</p></div>');
-    });
-});
+}
