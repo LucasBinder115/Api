@@ -3,170 +3,375 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MONTYPDF - Gerador de Provas</title>
-    <link rel="stylesheet" href="../css/dashboard.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://apis.google.com/js/api.js"></script>
+    <title>MONTYPDF - Gerador de Provas com IA</title>
 </head>
-<body class="gradient-bg min-h-screen text-gray-800">
-    <nav class="bg-indigo-600 text-white py-4 px-4 shadow-md">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold">MONTYPDF</h1>
-            <div class="space-x-4">
-                <a href="login.html" class="hover:text-indigo-200">Login</a>
-                <a href="register.html" class="hover:text-indigo-200">Registrar</a>
+<body>
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <!-- Navigation Bar -->
+    <nav>
+        <div>
+            <h1>MONTYPDF</h1>
+            <div>
+                <a href="login.html">Login</a>
+                <a href="register.html">Registrar</a>
             </div>
         </div>
     </nav>
 
-    <div class="container mx-auto px-4 py-8">
-        <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
-            <div class="grid md:grid-cols-3">
-                <!-- Sidebar -->
-                <aside class="bg-gray-50 p-6 border-r border-gray-200">
-                    <h2 class="text-2xl font-bold mb-6">Configurações</h2>
-                    
-                    <div class="space-y-4 mb-6">
-                        <div>
-                            <label class="block mb-1">Título</label>
-                            <input type="text" id="exam-title" class="w-full border rounded px-3 py-2">
-                        </div>
-                        <div>
-                            <label class="block mb-1">Matéria</label>
-                            <input type="text" id="exam-subject" class="w-full border rounded px-3 py-2">
-                        </div>
-                        <div>
-                            <label class="block mb-1">Turma</label>
-                            <input type="text" id="exam-grade" class="w-full border rounded px-3 py-2">
-                        </div>
-                    </div>
+    <!-- Main Content -->
+    <div>
+        <!-- Sidebar for Configurations -->
+        <aside>
+            <h2>Configurações</h2>
+            
+            <div>
+                <div>
+                    <label>Título</label>
+                    <input type="text" id="exam-title">
+                </div>
+                <div>
+                    <label>Matéria</label>
+                    <input type="text" id="exam-subject">
+                </div>
+                <div>
+                    <label>Turma</label>
+                    <input type="text" id="exam-grade">
+                </div>
+            </div>
 
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold mb-3">Tipo de Questões</h3>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button class="question-type-btn p-2 border rounded" data-type="multiple-choice">
-                                <i class="fas fa-check-square text-indigo-600"></i> Múltipla Escolha
-                            </button>
-                            <button class="question-type-btn p-2 border rounded" data-type="true-false">
-                                <i class="fas fa-toggle-on text-indigo-600"></i> V/F
-                            </button>
-                            <button class="question-type-btn p-2 border rounded" data-type="short-answer">
-                                <i class="fas fa-align-left text-indigo-600"></i> Curta
-                            </button>
-                            <button class="question-type-btn p-2 border rounded" data-type="essay">
-                                <i class="fas fa-pen-fancy text-indigo-600"></i> Dissertativa
-                            </button>
-                        </div>
-                    </div>
+            <div>
+                <h3>Tipo de Questões</h3>
+                <div>
+                    <button class="question-type-btn" data-type="multiple-choice">
+                        Múltipla Escolha
+                    </button>
+                    <button class="question-type-btn" data-type="true-false">
+                        V/F
+                    </button>
+                    <button class="question-type-btn" data-type="short-answer">
+                        Curta
+                    </button>
+                    <button class="question-type-btn" data-type="essay">
+                        Dissertativa
+                    </button>
+                </div>
+            </div>
 
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold mb-3">Formato</h3>
-                        <div class="space-y-2">
-                            <div class="flex justify-between items-center">
-                                <span>Orientacao</span>
-                                <select id="orientation" class="border rounded px-2 py-1">
-                                    <option value="portrait">Retrato</option>
-                                    <option value="landscape">Paisagem</option>
-                                </select>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span>Tamanho</span>
-                                <select id="page-size" class="border rounded px-2 py-1">
-                                    <option value="a4">A4</option>
-                                    <option value="letter">Carta</option>
-                                </select>
-                            </div>
-                        </div>
+            <div>
+                <h3>Formato</h3>
+                <div>
+                    <div>
+                        <span>Orientação</span>
+                        <select id="orientation">
+                            <option value="portrait">Retrato</option>
+                            <option value="landscape">Paisagem</option>
+                        </select>
+                    </div>
+                    <div>
+                        <span>Tamanho</span>
+                        <select id="page-size">
+                            <option value="a4">A4</option>
+                            <option value="letter">Carta</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3>Exportar</h3>
+                <div>
+                    <button id="export-pdf">
+                        PDF
+                    </button>
+                    <button id="export-answer-key">
+                        Gabarito
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Editor Section -->
+        <main>
+            <!-- Tabs for Navigation -->
+            <div>
+                <button class="tab active" onclick="switchTab('generate')">
+                    Gerar Perguntas
+                </button>
+                <button class="tab" onclick="switchTab('history')">
+                    Histórico
+                </button>
+            </div>
+
+            <!-- Generate Tab -->
+            <div id="generate-tab" class="tab-content active">
+                <div>
+                    <h2>🧠 Gerador de Perguntas com IA</h2>
+                    <p>Crie questionários personalizados com inteligência artificial</p>
+                </div>
+
+                <div>
+                    <h3>Editor de Questões</h3>
+                    <div>
+                        <button id="clear-all">
+                            Limpar
+                        </button>
+                        <button id="generate-with-ai">
+                            Gerar com IA
+                        </button>
+                    </div>
+                </div>
+
+                <div id="questions-container">
+                    <!-- Questions will be dynamically added here -->
+                </div>
+
+                <div>
+                    <h3>Adicionar Questão</h3>
+                    <div>
+                        <button class="add-question-btn" data-type="multiple-choice">
+                            Múltipla
+                        </button>
+                        <button class="add-question-btn" data-type="true-false">
+                            V/F
+                        </button>
+                        <button class="add-question-btn" data-type="short-answer">
+                            Curta
+                        </button>
+                        <button class="add-question-btn" data-type="essay">
+                            Dissertativa
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <div>
+                        <label>💡 Digite o tema para gerar perguntas:</label>
+                        <input type="text" id="topic-input" placeholder="Ex: História do Brasil, Matemática Básica...">
                     </div>
 
                     <div>
-                        <h3 class="text-lg font-semibold mb-3">Exportar</h3>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button id="export-pdf" class="bg-indigo-600 text-white py-2 rounded">
-                                <i class="fas fa-file-pdf mr-2"></i> PDF
-                            </button>
-                            <button id="export-answer-key" class="bg-gray-200 py-2 rounded">
-                                <i class="fas fa-key mr-2"></i> Gabarito
-                            </button>
-                        </div>
+                        <label>🔢 Número de perguntas:</label>
+                        <input type="number" id="num-questions" value="10" min="1" max="50">
                     </div>
-                </aside>
-                
-                <!-- Editor -->
-                <main class="md:col-span-2 p-6">
-                    <div class="flex justify-between mb-6">
-                        <h2 class="text-xl font-bold">Editor de Questões</h2>
+
+                    <div>
+                        <button id="generate-btn" onclick="generateQuestions()">
+                            Gerar Perguntas
+                        </button>
+                        <button id="download-btn" onclick="downloadPDF()" disabled>
+                            Baixar PDF
+                        </button>
+                        <button onclick="clearOutput()">
+                            Limpar
+                        </button>
+                    </div>
+
+                    <div id="output-area">
                         <div>
-                            <button id="clear-all" class="bg-red-100 text-red-600 px-3 py-1 rounded mr-2">
-                                <i class="fas fa-trash-alt mr-1"></i> Limpar
-                            </button>
-                            <button id="generate-with-ai" class="bg-green-100 text-green-600 px-3 py-1 rounded">
-                                <i class="fas fa-robot mr-1"></i> Gerar com IA
-                            </button>
+                            <h3>Pronto para gerar perguntas!</h3>
+                            <p>Digite um tema acima e clique em "Gerar Perguntas" para começar.</p>
                         </div>
                     </div>
-
-                    <div id="questions-container" class="space-y-4">
-                        <!-- As questões serão adicionadas aqui dinamicamente -->
-                    </div>
-
-                    <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-                        <h3 class="text-lg font-semibold mb-3">Adicionar Questão</h3>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                            <button class="add-question-btn p-2 border rounded" data-type="multiple-choice">
-                                <i class="fas fa-check-square text-indigo-600"></i> Múltipla
-                            </button>
-                            <button class="add-question-btn p-2 border rounded" data-type="true-false">
-                                <i class="fas fa-toggle-on text-indigo-600"></i> V/F
-                            </button>
-                            <button class="add-question-btn p-2 border rounded" data-type="short-answer">
-                                <i class="fas fa-align-left text-indigo-600"></i> Curta
-                            </button>
-                            <button class="add-question-btn p-2 border rounded" data-type="essay">
-                                <i class="fas fa-pen-fancy text-indigo-600"></i> Dissertativa
-                            </button>
-                        </div>
-                    </div>
-                </main>
+                </div>
             </div>
-        </div>
+
+            <!-- History Tab -->
+            <div id="history-tab" class="tab-content">
+                <div>
+                    <div>
+                        <div id="total-pdfs">0</div>
+                        <div>PDFs Gerados</div>
+                    </div>
+                    <div>
+                        <div id="total-questions">0</div>
+                        <div>Perguntas Criadas</div>
+                    </div>
+                    <div>
+                        <div id="total-size">0</div>
+                        <div>KB Total consequently</div>
+                    </div>
+bird
+                </div>
+
+                <div>
+                    <button onclick="viewSelected()" id="view-btn" disabled>
+                        Visualizar
+                    </button>
+                    <button onclick="downloadSelected()" id="download-selected-btn" disabled>
+                        Baixar
+                    </button>
+                    <button onclick="deleteSelected()" id="delete-btn" disabled>
+                        Excluir
+                    </button>
+                    <button onclick="loadHistory()">
+                        Atualizar
+                    </button>
+                </div>
+
+                <div id="history-container">
+                    <table id="history-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tópico</th>
+                                <th>Data</th>
+                                <th>Perguntas</th>
+                                <th>Tamanho</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <footer class="bg-gray-800 text-white py-6 mt-8">
-        <div class="container mx-auto px-4 text-center">
-            <p>© 2023 MONTYPDF. Todos os direitos reservados.</p>
-        </div>
-    </footer>
-
-    <!-- Modal para gerar com IA -->
-    <div id="ai-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 class="text-xl font-bold mb-4">Gerar Questões com IA</h3>
-            <div class="mb-4">
-                <label class="block mb-2">Tema/Assunto</label>
-                <input type="text" id="ai-topic" class="w-full border rounded px-3 py-2 mb-2" placeholder="Ex: Revolução Francesa">
+    <!-- AI Generation Modal -->
+    <div id="ai-modal" class="modal">
+        <div>
+            <h3>Gerar Questões com IA</h3>
+            <div>
+                <label>Tema/Assunto</label>
+                <input type="text" id="ai-topic" placeholder="Ex: Revolução Francesa">
             </div>
-            <div class="mb-4">
-                <label class="block mb-2">Nível</label>
-                <select id="ai-level" class="w-full border rounded px-3 py-2">
+            <div>
+                <label>Nível</label>
+                <select id="ai-level">
                     <option value="fundamental">Fundamental</option>
                     <option value="medio">Médio</option>
                     <option value="superior">Superior</option>
                 </select>
             </div>
-            <div class="mb-4">
-                <label class="block mb-2">Quantidade de Questões</label>
-                <input type="number" id="ai-quantity" min="1" max="20" value="5" class="w-full border rounded px-3 py-2">
+            <div>
+                <label>Quantidade de Questões</label>
+                <input type="number" id="ai-quantity" min="1" max="20" value="5">
             </div>
-            <div class="flex justify-end space-x-2">
-                <button id="cancel-ai" class="px-4 py-2 border rounded">Cancelar</button>
-                <button id="confirm-ai" class="px-4 py-2 bg-indigo-600 text-white rounded">Gerar</button>
+            <div>
+                <button id="cancel-ai">Cancelar</button>
+                <button id="confirm-ai">Gerar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Modal -->
+    <div id="view-modal" class="modal">
+        <div>
+            <div>
+Syncing...
+                <h2 id="modal-title">Visualizar Perguntas</h2>
+                <span onclick="closeModal()">×</span>
+            </div>
+            <div id="modal-body">
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🧠</h1>
+            <p></p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('generate')">
+                📝 Gerar Perguntas
+            </button>
+            <button class="tab" onclick="switchTab('history')">
+                📚 Histórico
+            </button>
+        </div>
+
+        <!-- Aba de Geração -->
+        <div id="generate-tab" class="tab-content active">
+            <div class="form-group">
+                <label for="topic-input">💡 Digite o tema para gerar perguntas:</label>
+                <input type="text" id="topic-input" class="form-control" 
+                       placeholder="Ex: História do Brasil, Matemática Básica, JavaScript..." 
+                       onkeypress="handleEnterKey(event)">
+            </div>
+
+            <div class="form-group">
+                <label for="num-questions">🔢 Número de perguntas:</label>
+                <input type="number" id="num-questions" class="form-control" 
+                       value="10" min="1" max="50">
+            </div>
+
+            <div class="btn-group">
+                <button id="generate-btn" class="btn btn-primary" onclick="generateQuestions()">
+                    ✨ Gerar Perguntas
+                </button>
+                <button id="download-btn" class="btn btn-success" onclick="downloadPDF()" disabled>
+                    📄 Baixar PDF
+                </button>
+                <button class="btn btn-secondary" onclick="clearOutput()">
+                    🗑️ Limpar
+                </button>
+            </div>
+
+            <div id="output-area" class="output-area">
+                <div class="empty-state">
+                    <div style="font-size: 3rem; margin-bottom: 20px;">📝</div>
+                    <h3></h3>
+                    <p>Digite um tema acima e clique em "Gerar Perguntas" para começar.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba de Histórico -->
+        <div id="history-tab" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-pdfs">0</div>
+                    <div class="stat-label">PDFs Gerados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-questions">0</div>
+                    <div class="stat-label">Perguntas Criadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-size">0</div>
+                    <div class="stat-label">KB Total</div>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="viewSelected()" id="view-btn" disabled>
+                    👁️ Visualizar
+                </button>
+                <button class="btn btn-success" onclick="downloadSelected()" id="download-selected-btn" disabled>
+                    📥 Baixar
+                </button>
+                <button class="btn btn-danger" onclick="deleteSelected()" id="delete-btn" disabled>
+                    🗑️ Excluir
+                </button>
+                <button class="btn btn-secondary" onclick="loadHistory()">
+                    🔄 Atualizar
+                </button>
+            </div>
+
+            <div id="history-container">
+                <table class="history-table" id="history-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tópico</th>
+                            <th>Data</th>
+                            <th>Perguntas</th>
+                            <th>Tamanho</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-tbody">
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 <script src="../js/dashboard.js"></script>
+    <footer>
+        <div>
+            <p>© 2023 MONTYPDF. Todos os direitos reservados.</p>
+        </div>
+    </footer>
 </body>
 </html>
