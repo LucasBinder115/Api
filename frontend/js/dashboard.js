@@ -142,29 +142,128 @@ async function generateQuestions() {
 
 // Generate mock questions
 function generateMockQuestions(topic, numQuestions) {
-    const questionTemplates = [
+    const questionTemplates = {
+        "Matemática": [
+            "Como resolver equações de segundo grau?",
+            "Qual é a fórmula da área de um círculo?",
+            "O que é o Teorema de Pitágoras e como aplicá-lo?",
+            "Como calcular derivadas e integrais?",
+            "Qual a diferença entre probabilidade e estatística?",
+            "O que são números primos e como identificá-los?",
+            "Como funciona o sistema binário?",
+            "Qual é a importância da álgebra linear na computação?",
+            "Como provar uma identidade trigonométrica?",
+            "O que é um logaritmo e para que serve?"
+        ],
+        "Programação": [
+            "Quais são os princípios do paradigma de orientação a objetos?",
+            "Como otimizar o tempo de execução de um algoritmo?",
+            "O que é recursão e quando usá-la?",
+            "Qual a diferença entre linguagens compiladas e interpretadas?",
+            "Como funciona o garbage collection em linguagens de programação?",
+            "O que são design patterns e por que são importantes?",
+            "Como lidar com exceções em programação?",
+            "Qual a diferença entre stack e heap?",
+            "O que são ponteiros e como usá-los?",
+            "Como escrever código limpo e legível?"
+        ],
+        "Python": [
+            "Como usar list comprehensions em Python?",
+            "Qual a diferença entre listas, tuplas e dicionários?",
+            "Como criar e usar decorators em Python?",
+            "O que são geradores (generators) e quando utilizá-los?",
+            "Como funciona o GIL (Global Interpreter Lock) no Python?",
+            "Quais são as melhores práticas para manipulação de arquivos em Python?",
+            "Como usar o módulo `asyncio` para programação assíncrona?",
+            "O que são e como usar funções lambda?",
+            "Como instalar e gerenciar pacotes com pip?",
+            "Quais são as principais bibliotecas para ciência de dados em Python?"
+        ],
+        "Banco de Dados": [
+            "Qual a diferença entre SQL e NoSQL?",
+            "Como normalizar um banco de dados relacional?",
+            "O que são índices e como melhoram a performance?",
+            "Como escrever consultas SQL eficientes?",
+            "O que são transações ACID?",
+            "Como lidar com deadlocks em bancos de dados?",
+            "Qual a diferença entre INNER JOIN, LEFT JOIN e RIGHT JOIN?",
+            "O que são stored procedures e quando usá-las?",
+            "Como fazer backup e recuperação de bancos de dados?",
+            "Quais são as melhores práticas de segurança em bancos de dados?"
+        ],
+        "História": [
+            "Quais foram as causas da Primeira Guerra Mundial?",
+            "Como o Iluminismo influenciou a Revolução Francesa?",
+            "Quais foram os principais impérios da Antiguidade?",
+            "Como ocorreu a queda do Império Romano?",
+            "Quais foram as consequências da Guerra Fria?",
+            "Como foi o processo de independência do Brasil?",
+            "Quem foram os principais líderes da Segunda Guerra Mundial?",
+            "O que foi a Revolução Industrial e como mudou o mundo?",
+            "Quais as origens do feudalismo na Europa?",
+            "Como o colonialismo afetou a África?"
+        ],
+        "Video Game": [
+            "Quais foram os consoles mais vendidos da história?",
+            "Como a indústria de games evoluiu nas últimas décadas?",
+            "Quais são os principais gêneros de jogos eletrônicos?",
+            "Como funciona o desenvolvimento de um jogo AAA?",
+            "Quais as diferenças entre Unreal Engine e Unity?",
+            "O que é ray tracing e como impacta os gráficos dos jogos?",
+            "Quem são os principais protagonistas da história dos videogames?",
+            "Como os eSports se tornaram tão populares?",
+            "Quais são os jogos mais caros já produzidos?",
+            "Como a realidade virtual está mudando os games?"
+        ],
+        "Música Heavy Metal": [
+            "Quais são as subdivisões do heavy metal?",
+            "Quem são considerados os pais do heavy metal?",
+            "Como o heavy metal surgiu nos anos 70?",
+            "Quais são as bandas mais influentes do gênero?",
+            "Como a vestimenta do metal se desenvolveu?",
+            "O que caracteriza o som do heavy metal?",
+            "Quais são os álbuns mais importantes do metal?",
+            "Como o heavy metal influenciou outras músicas?",
+            "Quais são os maiores festivais de metal do mundo?",
+            "Como a cultura metal se espalhou pelo mundo?"
+        ],
+        "Thrash Metal": [
+            "Quais são as bandas fundadoras do thrash metal?",
+            "Como o thrash metal difere do heavy metal tradicional?",
+            "Qual foi a importância do Big 4 do thrash metal?",
+            "Como o thrash metal influenciou o death metal?",
+            "Quais são os álbuns mais icônicos do thrash?",
+            "Como o thrash metal se desenvolveu nos anos 80?",
+            "Quais são as características técnicas do thrash?",
+            "Como o thrash metal se mantém relevante hoje?",
+            "Quais são as bandas modernas de thrash mais promissoras?",
+            "Como o thrash metal se espalhou para além dos EUA?"
+        ]
+    };
+
+    const questions = [];
+    const templates = questionTemplates[topic] || [
         `O que é ${topic}?`,
         `Quais são as principais características de ${topic}?`,
         `Como ${topic} influencia nossa vida cotidiana?`,
         `Qual é a importância de ${topic}?`,
-        `Quais são os benefícios de estudar ${topic}?`,
-        `Como podemos aplicar ${topic} na prática?`,
-        `Quais são os desafios relacionados a ${topic}?`,
-        `Qual é o futuro de ${topic}?`,
-        `Como ${topic} evoluiu ao longo do tempo?`,
-        `Quais são as melhores práticas em ${topic}?`
+        `Quais são os benefícios de estudar ${topic}?`
     ];
 
-    const questions = [];
     for (let i = 0; i < numQuestions; i++) {
-        if (i < questionTemplates.length) {
-            questions.push(`${i + 1}. ${questionTemplates[i]}`);
+        if (i < templates.length) {
+            questions.push(`${i + 1}. ${templates[i]}`);
         } else {
             questions.push(`${i + 1}. Pergunta adicional sobre ${topic} - exemplo ${i + 1}?`);
         }
     }
     return questions;
 }
+
+// Exemplo de uso:
+console.log(generateMockQuestions("Thrash Metal", 5));
+console.log(generateMockQuestions("Python", 7));
+console.log(generateMockQuestions("História", 3));
 
 // Display questions with animation
 function displayQuestions(questions) {
