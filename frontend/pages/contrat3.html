@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MontyPDF - Formulário de Contrato</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            min-height: calc(100vh - 4rem);
+        }
+
+        .form-section, .preview-section {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #667eea;
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-content {
+            padding: 2rem;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .dynamic-section {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            background: #f8f9ff;
+        }
+
+        .dynamic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #e53e3e;
+        }
+
+        .btn-danger:hover {
+            background: #c53030;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .preview-content {
+            padding: 2rem;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+        }
+
+        .contract-text {
+            white-space: pre-line;
+            color: #333;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .generate-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .generate-btn:hover {
+            background: #218838;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #667eea;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .preview-section {
+                order: 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+        }
+
+        .cpf-input {
+            position: relative;
+        }
+
+        .cpf-input input {
+            padding-right: 3rem;
+        }
+
+        .format-btn {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.3rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.history.back()">← Voltar</button>
+    
+    <div class="container">
+        <!-- Seção do Formulário -->
+        <div class="form-section">
+            <div class="section-header">
+                <h2>📋 Dados do Contrato</h2>
+                <p>Preencha as informações para gerar o contrato</p>
+            </div>
+            
+            <div class="form-content">
+                <!-- Dados Gerais -->
+                <div class="form-group">
+                    <label>Tipo de Contrato</label>
+                    <select id="contractType">
+                        <option value="comodato">Contrato de Comodato</option>
+                        <option value="arrendamento">Contrato de Arrendamento</option>
+                        <option value="compra-venda">Compra e Venda</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Data de Início</label>
+                        <input type="date" id="startDate" onchange="updatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>Data de Término</label>
+                        <input type="date" id="endDate" onchange="updatePreview()">
+                    </div>
+                </div>
+
+                <!-- Comodantes -->
+                <div class="dynamic-section">
+                    <div class="dynamic-header">
+                        <h3>👥 Comodantes</h3>
+                        <button class="btn btn-small" onclick="addComodante()">+ Adicionar</button>
+                    </div>
+                    <div id="comodantesContainer">
+                        <div class="comodante-item" data-index="0">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nome Completo</label>
+                                    <input type="text" name="comodante_nome_0" onchange="updatePreview()" placeholder="Ex: João Silva Santos">
+                                </div>
+                                <div class="form-group">
+                                    <label>Estado Civil</label>
+                                    <select name="comodante_estado_civil_0" onchange="updatePreview()">
+                                        <option value="solteiro">Solteiro(a)</option>
+                                        <option value="casado">Casado(a)</option>
+                                        <option value="divorciado">Divorciado(a)</option>
+                                        <option value="viúvo">Viúvo(a)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group cpf-input">
+                                    <label>CPF</label>
+                                    <input type="text" name="comodante_cpf_0" onchange="updatePreview()" placeholder="000.000.000-00" maxlength="14">
+                                    <button type="button" class="format-btn" onclick="formatCPF(this)">📋</button>
+                                </div>
+                                <div class="form-group">
+                                    <label>RG</label>
+                                    <input type="text" name="comodante_rg_0" onchange="updatePreview()" placeholder="0.000.000">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Endereço Completo</label>
+                                <input type="text" name="comodante_endereco_0" onchange="updatePreview()" placeholder="Localidade, Município/Estado">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comodatários -->
+                <div class="dynamic-section">
+                    <div class="dynamic-header">
+                        <h3>🏠 Comodatários</h3>
+                        <button class="btn btn-small" onclick="addComodatario()">+ Adicionar</button>
+                    </div>
+                    <div id="comodatariosContainer">
+                        <div class="comodatario-item" data-index="0">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nome Completo</label>
+                                    <input type="text" name="comodatario_nome_0" onchange="updatePreview()" placeholder="Ex: Maria Santos Silva">
+                                </div>
+                                <div class="form-group">
+                                    <label>Estado Civil</label>
+                                    <select name="comodatario_estado_civil_0" onchange="updatePreview()">
+                                        <option value="solteiro">Solteiro(a)</option>
+                                        <option value="casado">Casado(a)</option>
+                                        <option value="divorciado">Divorciado(a)</option>
+                                        <option value="viúvo">Viúvo(a)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group cpf-input">
+                                    <label>CPF</label>
+                                    <input type="text" name="comodatario_cpf_0" onchange="updatePreview()" placeholder="000.000.000-00" maxlength="14">
+                                    <button type="button" class="format-btn" onclick="formatCPF(this)">📋</button>
+                                </div>
+                                <div class="form-group">
+                                    <label>RG</label>
+                                    <input type="text" name="comodatario_rg_0" onchange="updatePreview()" placeholder="0.000.000">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Endereço Completo</label>
+                                <input type="text" name="comodatario_endereco_0" onchange="updatePreview()" placeholder="Localidade, Município/Estado">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dados do Imóvel -->
+                <div class="dynamic-section">
+                    <h3>🏡 Dados do Imóvel</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Área Total (hectares)</label>
+                            <input type="number" id="areaTotal" step="0.1" onchange="updatePreview()" placeholder="Ex: 22.9">
+                        </div>
+                        <div class="form-group">
+                            <label>Área em Comodato (hectares)</label>
+                            <input type="number" id="areaComodato" step="0.1" onchange="updatePreview()" placeholder="Ex: 13.0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Localidade do Imóvel</label>
+                            <input type="text" id="localidadeImovel" onchange="updatePreview()" placeholder="Ex: Bom Sucesso">
+                        </div>
+                        <div class="form-group">
+                            <label>Município</label>
+                            <input type="text" id="municipioImovel" onchange="updatePreview()" placeholder="Ex: Itaiópolis/SC">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Número da Matrícula</label>
+                        <input type="text" id="matricula" onchange="updatePreview()" placeholder="Ex: 0000">
+                    </div>
+                </div>
+
+                <!-- Condições Específicas -->
+                <div class="dynamic-section">
+                    <h3>📋 Condições Específicas</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Prazo (anos)</label>
+                            <input type="number" id="prazoAnos" onchange="updatePreview()" placeholder="Ex: 5">
+                        </div>
+                        <div class="form-group">
+                            <label>Sacas de Soja por Alqueire</label>
+                            <input type="number" id="sacasSoja" onchange="updatePreview()" placeholder="Ex: 37">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Local de Depósito</label>
+                        <input type="text" id="localDeposito" onchange="updatePreview()" placeholder="Ex: BIGSAFRA de Moema/Itaiopolis/SC">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Preview -->
+        <div class="preview-section">
+            <div class="section-header">
+                <h2>👁️ Visualização do Contrato</h2>
+                <p>Preview em tempo real</p>
+            </div>
+            
+            <div class="preview-content">
+                <div id="contractPreview" class="contract-text">
+                    Preencha os dados ao lado para visualizar o contrato...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="generate-btn" onclick="generateContract()">📄 Gerar Contrato Final</button>
+
+    <script>
+        let comodanteCount = 1;
+        let comodatarioCount = 1;
+
+        function addComodante() {
+            const container = document.getElementById('comodantesContainer');
+            const newItem = document.createElement('div');
+            newItem.className = 'comodante-item';
+            newItem.setAttribute('data-index', comodanteCount);
+            
+            newItem.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h4>Comodante ${comodanteCount + 1}</h4>
+                    <button class="btn btn-danger btn-small" onclick="removeComodante(${comodanteCount})">Remover</button>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nome Completo</label>
+                        <input type="text" name="comodante_nome_${comodanteCount}" onchange="updatePreview()" placeholder="Ex: João Silva Santos">
+                    </div>
+                    <div class="form-group">
+                        <label>Estado Civil</label>
+                        <select name="comodante_estado_civil_${comodanteCount}" onchange="updatePreview()">
+                            <option value="solteiro">Solteiro(a)</option>
+                            <option value="casado">Casado(a)</option>
+                            <option value="divorciado">Divorciado(a)</option>
+                            <option value="viúvo">Viúvo(a)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group cpf-input">
+                        <label>CPF</label>
+                        <input type="text" name="comodante_cpf_${comodanteCount}" onchange="updatePreview()" placeholder="000.000.000-00" maxlength="14">
+                        <button type="button" class="format-btn" onclick="formatCPF(this)">📋</button>
+                    </div>
+                    <div class="form-group">
+                        <label>RG</label>
+                        <input type="text" name="comodante_rg_${comodanteCount}" onchange="updatePreview()" placeholder="0.000.000">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Endereço Completo</label>
+                    <input type="text" name="comodante_endereco_${comodanteCount}" onchange="updatePreview()" placeholder="Localidade, Município/Estado">
+                </div>
+            `;
+            
+            container.appendChild(newItem);
+            comodanteCount++;
+            updatePreview();
+        }
+
+        function addComodatario() {
+            const container = document.getElementById('comodatariosContainer');
+            const newItem = document.createElement('div');
+            newItem.className = 'comodatario-item';
+            newItem.setAttribute('data-index', comodatarioCount);
+            
+            newItem.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h4>Comodatário ${comodatarioCount + 1}</h4>
+                    <button class="btn btn-danger btn-small" onclick="removeComodatario(${comodatarioCount})">Remover</button>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nome Completo</label>
+                        <input type="text" name="comodatario_nome_${comodatarioCount}" onchange="updatePreview()" placeholder="Ex: Maria Santos Silva">
+                    </div>
+                    <div class="form-group">
+                        <label>Estado Civil</label>
+                        <select name="comodatario_estado_civil_${comodatarioCount}" onchange="updatePreview()">
+                            <option value="solteiro">Solteiro(a)</option>
+                            <option value="casado">Casado(a)</option>
+                            <option value="divorciado">Divorciado(a)</option>
+                            <option value="viúvo">Viúvo(a)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group cpf-input">
+                        <label>CPF</label>
+                        <input type="text" name="comodatario_cpf_${comodatarioCount}" onchange="updatePreview()" placeholder="000.000.000-00" maxlength="14">
+                        <button type="button" class="format-btn" onclick="formatCPF(this)">📋</button>
+                    </div>
+                    <div class="form-group">
+                        <label>RG</label>
+                        <input type="text" name="comodatario_rg_${comodatarioCount}" onchange="updatePreview()" placeholder="0.000.000">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Endereço Completo</label>
+                    <input type="text" name="comodatario_endereco_${comodatarioCount}" onchange="updatePreview()" placeholder="Localidade, Município/Estado">
+                </div>
+            `;
+            
+            container.appendChild(newItem);
+            comodatarioCount++;
+            updatePreview();
+        }
+
+        function removeComodante(index) {
+            const item = document.querySelector(`[data-index="${index}"].comodante-item`);
+            if (item) {
+                item.remove();
+                updatePreview();
+            }
+        }
+
+        function removeComodatario(index) {
+            const item = document.querySelector(`[data-index="${index}"].comodatario-item`);
+            if (item) {
+                item.remove();
+                updatePreview();
+            }
+        }
+
+        function formatCPF(button) {
+            const input = button.previousElementSibling;
+            let value = input.value.replace(/\D/g, '');
+            
+            if (value.length <= 11) {
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            }
+            
+            input.value = value;
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const contractType = document.getElementById('contractType').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            // Coleta dados dos comodantes
+            const comodantes = [];
+            document.querySelectorAll('.comodante-item').forEach((item, index) => {
+                const nome = item.querySelector(`[name*="nome"]`).value;
+                const estadoCivil = item.querySelector(`[name*="estado_civil"]`).value;
+                const cpf = item.querySelector(`[name*="cpf"]`).value;
+                const rg = item.querySelector(`[name*="rg"]`).value;
+                const endereco = item.querySelector(`[name*="endereco"]`).value;
+                
+                if (nome) {
+                    comodantes.push({ nome, estadoCivil, cpf, rg, endereco });
+                }
+            });
+
+            // Coleta dados dos comodatários
+            const comodatarios = [];
+            document.querySelectorAll('.comodatario-item').forEach((item, index) => {
+                const nome = item.querySelector(`[name*="nome"]`).value;
+                const estadoCivil = item.querySelector(`[name*="estado_civil"]`).value;
+                const cpf = item.querySelector(`[name*="cpf"]`).value;
+                const rg = item.querySelector(`[name*="rg"]`).value;
+                const endereco = item.querySelector(`[name*="endereco"]`).value;
+                
+                if (nome) {
+                    comodatarios.push({ nome, estadoCivil, cpf, rg, endereco });
+                }
+            });
+
+            // Dados do imóvel
+            const areaTotal = document.getElementById('areaTotal').value;
+            const areaComodato = document.getElementById('areaComodato').value;
+            const localidadeImovel = document.getElementById('localidadeImovel').value;
+            const municipioImovel = document.getElementById('municipioImovel').value;
+            const matricula = document.getElementById('matricula').value;
+            const prazoAnos = document.getElementById('prazoAnos').value;
+            const sacasSoja = document.getElementById('sacasSoja').value;
+            const localDeposito = document.getElementById('localDeposito').value;
+
+            // Gera o contrato
+            const contract = generateContractText({
+                contractType, startDate, endDate, comodantes, comodatarios,
+                areaTotal, areaComodato, localidadeImovel, municipioImovel,
+                matricula, prazoAnos, sacasSoja, localDeposito
+            });
+
+            document.getElementById('contractPreview').innerHTML = contract;
+        }
+
+        function generateContractText(data) {
+            if (data.comodantes.length === 0 || data.comodatarios.length === 0) {
+                return 'Preencha pelo menos um comodante e um comodatário para visualizar o contrato...';
+            }
+
+            const formatDate = (dateStr) => {
+                if (!dateStr) return '[DATA]';
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('pt-BR');
+            };
+
+            const comodantesText = data.comodantes.map(c => 
+                `<span class="highlight">${c.nome || '[NOME]'}</span>, brasileiro, agricultor, ${c.estadoCivil || '[ESTADO CIVIL]'}, inscrito no CPF sob nº <span class="highlight">${c.cpf || '[CPF]'}</span> e RG nº <span class="highlight">${c.rg || '[RG]'}</span>, residente e domiciliado em <span class="highlight">${c.endereco || '[ENDEREÇO]'}</span>`
+            ).join(' e ');
+
+            const comodatariosText = data.comodatarios.map(c => 
+                `<span class="highlight">${c.nome || '[NOME]'}</span>, brasileiro, agricultor, ${c.estadoCivil || '[ESTADO CIVIL]'}, inscrito no CPF sob nº <span class="highlight">${c.cpf || '[CPF]'}</span> e RG nº <span class="highlight">${c.rg || '[RG]'}</span>, residente e domiciliado em <span class="highlight">${c.endereco || '[ENDEREÇO]'}</span>`
+            ).join(' e ');
+
+            return `
+<center><strong>CONTRATO DE COMODATO DE IMÓVEL RURAL</strong></center>
+
+Pelo presente instrumento particular de contrato de comodato, de um lado ${comodantesText}, de ora em diante chamados simplesmente de COMODANTES e de outro lado ${comodatariosText}, de ora em diante chamado simplesmente de COMODATÁRIO, têm, entre si, justo e acordado o seguinte:
+
+<strong>CLÁUSULA PRIMEIRA:</strong> Os COMODANTES são legítimos possuidores de um imóvel rural, com área total de <span class="highlight">${data.areaTotal || '[ÁREA TOTAL]'}</span> ha (${data.areaTotal ? extenso(parseFloat(data.areaTotal)) : '[ÁREA POR EXTENSO]'} hectares), situado na localidade de <span class="highlight">${data.localidadeImovel || '[LOCALIDADE]'}</span>, zona rural do município de <span class="highlight">${data.municipioImovel || '[MUNICÍPIO]'}</span> e põe a disposição do COMODATÁRIO a área de <span class="highlight">${data.areaComodato || '[ÁREA COMODATO]'}</span> ha (${data.areaComodato ? extenso(parseFloat(data.areaComodato)) : '[ÁREA POR EXTENSO]'} hectares) do referido imóvel, registrado no cartório de registro de imóveis da comarca de ${data.municipioImovel || '[MUNICÍPIO]'}, Matrícula sob nº <span class="highlight">${data.matricula || '[MATRÍCULA]'}</span>
+
+<strong>CLÁUSULA SEGUNDA:</strong> Pelo presente instrumento, os COMODANTES cedem em comodato ao COMODATÁRIO, pelo prazo de <span class="highlight">${data.prazoAnos || '[PRAZO]'}</span> (${data.prazoAnos ? extenso(parseInt(data.prazoAnos)) : '[PRAZO POR EXTENSO]'}) anos com início em <span class="highlight">${formatDate(data.startDate)}</span> e término em <span class="highlight">${formatDate(data.endDate)}</span> o imóvel constante na Cláusula Primeira, podendo ser renovado caso haja interesse de ambas as partes.
+
+<strong>CLÁUSULA TERCEIRA:</strong> O COMODATÁRIO somente poderá utilizar a área acima para sua exclusiva moradia habitual e fazer hortas para sua própria subsistência, e produzir excedentes para comercialização para bem melhor lhe convier, não podendo ceder a quem quer que seja e sob qualquer título, parcial ou totalmente, a aludida área, bem como não poderá fazer e nem executar cortes ou podas danosas aos fins florestais e agrícolas a que se destina o imóvel objeto deste contrato.
+
+<strong>PARÁGRAFO ÚNICO:</strong> O COMODATÁRIO obriga-se ainda:
+
+a) a usar o imóvel conforme o convencionado neste contrato, tratando-o com o mesmo cuidado como se fossem seus, não podendo mudar sua destinação.
+
+b) A levar ao conhecimento dos COMODANTES, imediatamente, qualquer ameaça ou ato de turbação ou esbulho que, contra a sua posse venha a sofrer, e, ainda, de qualquer fato do qual resulte a necessidade de execução de obras e reparos, indispensáveis à garantia do uso do mesmo.
+
+c) Deverá o co
