@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MontyPDF - Contratos Rurais</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            animation: fadeInUp 1s ease;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+
+        /* Main Content */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .intro {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 3rem;
+            text-align: center;
+            animation: fadeInUp 1s ease 0.4s both;
+        }
+
+        .intro h2 {
+            color: #667eea;
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .intro p {
+            font-size: 1.1rem;
+            color: #666;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Contract Grid */
+        .contract-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            animation: fadeInUp 1s ease 0.6s both;
+        }
+
+        .contract-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #333;
+            border: 2px solid transparent;
+        }
+
+        .contract-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            border-color: #667eea;
+        }
+
+        .contract-card h3 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .contract-card p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .contract-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 3rem 0;
+        }
+
+        .tab {
+            background: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab:hover, .tab.active {
+            background: #667eea;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 0 1rem;
+            }
+            
+            .nav-links {
+                gap: 1rem;
+            }
+            
+            header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .intro {
+                padding: 2rem;
+            }
+            
+            .contract-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Content sections */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">📄 MONTYPDF</a>
+            <div class="nav-links">
+                <a href="#login">Login</a>
+                <a href="#register">Registrar</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header>
+        <h1>MontyContratos</h1>
+        <p>Geração de contratos para produtores rurais com praticidade e segurança</p>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('contracts')">
+                📋 Contratos
+            </button>
+            <button class="tab" onclick="switchTab('history')">
+                📚 Histórico
+            </button>
+        </div>
+
+        <!-- Contracts Section -->
+        <div id="contracts" class="content-section active">
+            <section class="intro">
+                <h2>Escolha o tipo de contrato</h2>
+                <p>Antes de gerar o contrato, você informará os dados do produtor e partes envolvidas, semelhante a uma nota eletrônica. Selecione o tipo de contrato abaixo:</p>
+            </section>
+
+            <div class="contract-grid">
+                <a href="#" class="contract-card" onclick="goToContract('comodato')">
+                    <span class="contract-icon">🏠</span>
+                    <h3>Contrato de Comodato</h3>
+                    <p>Empréstimo gratuito de bem imóvel para uso temporário</p>
+                </a>
+
+                <a href="#" class="contract-card" onclick="goToContract('compra-veiculo')">
+                    <span class="contract-icon">🚗</span>
+                    <h3>Compra e Venda de Veículo</h3>
+                    <p>Transferência de propriedade de veículos rurais</p>
+                </a>
+
+                <a href="#" class="contract-card" onclick="goToContract('compra-imovel')">
+                    <span class="contract-icon">🏡</span>
+                    <h3>Compra e Venda de Imóvel Rural</h3>
+                    <p>Transação de propriedades rurais</p>
+                </a>
+
+                <a href="#" class="contract-card" onclick="goToContract('arrendamento')">
+                    <span class="contract-icon">🌾</span>
+                    <h3>Contrato de Arrendamento</h3>
+                    <p>Locação de terras para atividade agrícola</p>
+                </a>
+
+                <a href="#" class="contract-card" onclick="goToContract('doacao')">
+                    <span class="contract-icon">🎁</span>
+                    <h3>Contrato de Doação</h3>
+                    <p>Transferência gratuita de bens</p>
+                </a>
+
+                <a href="#" class="contract-card" onclick="goToContract('empreitada')">
+                    <span class="contract-icon">🔨</span>
+                    <h3>Contrato de Empreitada</h3>
+                    <p>Prestação de serviços rurais específicos</p>
+                </a>
+
+                <a href="#" class="contract-card" onclick="goToContract('parceria-agricola')">
+                    <span class="contract-icon">🤝</span>
+                    <h3>Parceria Agrícola</h3>
+                    <p>Sociedade para produção agrícola</p>
+                </a>
+
+                <a href="#" class="contract-card" onclick="goToContract('trabalho')">
+                    <span class="contract-icon">👥</span>
+                    <h3>Contrato de Trabalho</h3>
+                    <p>Relação trabalhista rural</p>
+                </a>
+
+                <a href="#" class="contract-card" onclick="goToContract('locacao-casa')">
+                    <span class="contract-icon">🏘️</span>
+                    <h3>Locação de Casa</h3>
+                    <p>Aluguel de imóveis residenciais</p>
+                </a>
+
+                <a href="#" class="contract-card" onclick="goToContract('diversos')">
+                    <span class="contract-icon">📄</span>
+                    <h3>Contratos Diversos</h3>
+                    <p>Outros tipos de contratos personalizados</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div id="history" class="content-section">
+            <section class="intro">
+                <h2>Histórico de Contratos</h2>
+                <p>Visualize e gerencie todos os contratos já criados</p>
+            </section>
+            
+            <div style="background: white; padding: 3rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center;">
+                <h3 style="color: #667eea; margin-bottom: 1rem;">📋 Nenhum contrato encontrado</h3>
+                <p style="color: #666;">Você ainda não criou nenhum contrato. Comece criando seu primeiro contrato na aba "Contratos".</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 - Sindicato dos Produtores Rurais</p>
+    </footer>
+
+    <script>
+        function switchTab(tabName) {
+            // Remove active class from all tabs and sections
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            // Show corresponding section
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function goToContract(contractType) {
+            // Simula navegação para página de formulário
+            alert(`Redirecionando para o formulário do contrato: ${contractType}\n\nEm uma implementação real, isso levaria para: formulario.html?tipo=${contractType}`);
+            
+            // Em uma implementação real, você usaria:
+            // window.location.href = `formulario.html?tipo=${contractType}`;
+        }
+
+        // Adiciona efeito de carregamento suave
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+
+        // Adiciona interatividade aos cards
+        document.querySelectorAll('.contract-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+                this.style.color = 'white';
+                this.querySelector('h3').style.color = 'white';
+                this.querySelector('p').style.color = 'rgba(255,255,255,0.9)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.background = 'white';
+                this.style.color = '#333';
+                this.querySelector('h3').style.color = '#667eea';
+                this.querySelector('p').style.color = '#666';
+            });
+        });
+    </script>
+</body>
+</html>
